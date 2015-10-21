@@ -149,19 +149,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Price"
-                android:id="@+id/textView11" />
+                android:id="@+id/priceTextView" />
 
             <Button
+                android:id="@+id/sampleButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Read Sample Book"
-                android:id="@+id/sampleButton" />
+                />
 
             <Button
+                android:id="@+id/buyButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Get Full Book"
-                android:id="@+id/buyButton" />
+                 />
         </LinearLayout>
 
     </RelativeLayout>

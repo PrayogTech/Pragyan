@@ -2,10 +2,12 @@ package com.prayas.prayas;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+
 import android.content.res.Configuration;
-import android.graphics.pdf.PdfDocument;
-import android.net.Uri;
+
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -22,23 +24,27 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.itextpdf.awt.geom.Rectangle;
+import com.itextpdf.text.pdf.ByteBuffer;
 import com.itextpdf.text.pdf.PdfReader;
+import com.sun.pdfview.PDFFile;
+import com.sun.pdfview.PDFPage;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-
-import nl.siegmann.epublib.domain.Book;
-import nl.siegmann.epublib.epub.EpubReader;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -130,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
                 BookDetail viewHolder = (BookDetail) view.getTag(R.id.folder_holder);
                 File directory = new File(viewHolder.bookFilePath);
-                showBook(directory);
+                showBook(directory, viewHolder);
 
             }
         });
@@ -164,15 +170,23 @@ public class MainActivity extends AppCompatActivity {
                     if (listFile[i].getName().endsWith(pdfPattern)){
                         //Do what ever u want
                         File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook/" + listFile[i].getName() );
-                        getPDFMetaData(directory.getAbsolutePath(), directory);
-                        //getBookMetaDataFromPdf(directory.getAbsolutePath(), directory);
                         Log.d("file name", listFile[i].getName());
+                        try {
+
+                            URL url = directory.toURI().toURL();
+                            getPDFMetaData(directory.getAbsolutePath(), directory);
+                        } catch (MalformedURLException e) {
+                            e.printStackTrace();
+                        }
+
+                        //getBookMetaDataFromPdf(directory.getAbsolutePath(), directory);
+
 
 
                     }else if(listFile[i].getName().endsWith(epubPattern)){
                         File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook/" + listFile[i].getName() );
 
-                        getBookMetaDataFromPdf(directory.getAbsolutePath(), directory);
+                       // getBookMetaDataFromPdf(directory.getAbsolutePath(), directory);
                         Log.d("file name", listFile[i].getName());
                     }
                 }
@@ -180,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void getBookMetaDataFromPdf(String bookFile, File directory){
+    /*public void getBookMetaDataFromPdf(String bookFile, File directory){
 
 
         try (FileInputStream fileInputStream = new FileInputStream(bookFile)) {
@@ -203,19 +217,43 @@ public class MainActivity extends AppCompatActivity {
             Log.d("book", "exception");
         }
 
-    }
+    }*/
 
     public void getPDFMetaData(String bookFile, File directory){
         try {
             PdfReader reader = new PdfReader(bookFile);
-            String st = new String(reader.getMetadata());
+            RandomAccessFile raf = new RandomAccessFile(directory, "r");
+            FileChannel channel = raf.getChannel();
+
+           net.sf.andpdf.nio.ByteBuffer buf = net.sf.andpdf.nio.ByteBuffer.NEW(channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()));
+            PDFFile pdffile = new PDFFile(buf);
+
+            // draw the first page to an image
+            PDFPage page = pdffile.getPage(0);
+            Log.d("metadata", "check"+page);
+            //get the width and height for the doc at the default zoom
+            Rectangle rect = new Rectangle(0,0,
+                    (int)page.getBBox().width(),
+                    (int)page.getBBox().height());
+
+            //generate the image
+            Bitmap img = page.getImage((int) rect.width, (int) rect.height, null, true, true);
+
+            Log.d("metadata", "check2");
+            if (reader.getMetadata() != null){
+                String st = new String(reader.getMetadata());
+                Log.d("metadata:", st);
+            }
+            //
             Map info = reader.getInfo();
             for (Iterator i = info.keySet().iterator(); i.hasNext();) {
                 String key = (String) i.next();
                 String value = (String) info.get(key);
-                System.out.println(key + ": " + value);
+               System.out.println(key + ": " + value);
             }
-            Log.d("reader", reader.getMetadata().toString()+"hj"+st);
+           // Log.d("reader", reader.getMetadata().toString()+"hj"+st);
+            //Log.d("catalog", reader.getCatalog() + "jhf");
+          //  System.out.println("reader.getPageResources(0)"+reader.getPageResources(0));
             BookDetail bookD = new BookDetail();
             bookD.bookName = "j";
             bookD.authorName = "uy";
@@ -223,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
             bookD.bookIcon = R.drawable.comic;
 
             //File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook/" + listFile[i].getName() );
+
 
             bookD.bookFilePath = directory.getAbsolutePath(); //listFile[i].getName();
             bookDetailArrayList.add(bookD);
@@ -232,8 +271,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showBook(File bookPath){
-        PackageManager packageManager = getPackageManager();
+    public void showBook(File bookPath, BookDetail bookDetail){
+        Intent intent = new Intent(MainActivity.this,BookDetailActivity.class);
+        Bundle information = new Bundle();
+
+        information.putSerializable("BookDetail", bookDetail);
+
+        intent.putExtras(information);
+        startActivity(intent);
+
+        /*PackageManager packageManager = getPackageManager();
 
         Intent   testIntent = new Intent(Intent.ACTION_VIEW);
         testIntent.setType("application/pdf");
@@ -252,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_VIEW);
          intent.setDataAndType(uri, "application/epub+zip");
        // intent.setDataAndType(uri, "application/pdf");
-        startActivity(intent);
+        startActivity(intent);*/
     }
 
     @Override
