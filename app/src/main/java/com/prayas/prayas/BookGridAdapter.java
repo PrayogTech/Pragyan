@@ -16,7 +16,6 @@ import java.util.ArrayList;
  * Created by kokila on 16/10/15.
  */
 public class BookGridAdapter extends ArrayAdapter<BookDetail> {
-
     private Context mContext;
    private LayoutInflater inflater;
 //    private LayoutInflater inflater;

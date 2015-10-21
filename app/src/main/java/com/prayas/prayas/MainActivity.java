@@ -5,9 +5,6 @@ import android.content.Intent;
 
 import android.content.res.Configuration;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -27,7 +24,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.itextpdf.awt.geom.Rectangle;
-import com.itextpdf.text.pdf.ByteBuffer;
 import com.itextpdf.text.pdf.PdfReader;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
@@ -38,8 +34,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -125,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
 
     public  void  loadBookGridView(){
 
-
         getBooksFromDevice();
 
         bookGridAdapter = new BookGridAdapter(mContext,bookDetailArrayList);
@@ -135,8 +128,8 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 BookDetail viewHolder = (BookDetail) view.getTag(R.id.folder_holder);
-                File directory = new File(viewHolder.bookFilePath);
-                showBook(directory, viewHolder);
+               // File directory = new File(viewHolder.bookFilePath.getFile());
+                showBook(viewHolder);
 
             }
         });
@@ -174,13 +167,11 @@ public class MainActivity extends AppCompatActivity {
                         try {
 
                             URL url = directory.toURI().toURL();
-                            getPDFMetaData(directory.getAbsolutePath(), directory);
+                            Log.d("url Path", url.getPath());
+                            getPDFMetaData(url, directory);
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
                         }
-
-                        //getBookMetaDataFromPdf(directory.getAbsolutePath(), directory);
-
 
 
                     }else if(listFile[i].getName().endsWith(epubPattern)){
@@ -219,7 +210,9 @@ public class MainActivity extends AppCompatActivity {
 
     }*/
 
-    public void getPDFMetaData(String bookFile, File directory){
+    public void getPDFMetaData(URL bookFile, File directory){
+
+        //storage/emulated/0/PrayasBook/Swift%20Quick%20Syntax%20Reference.pdf
         try {
             PdfReader reader = new PdfReader(bookFile);
             RandomAccessFile raf = new RandomAccessFile(directory, "r");
@@ -237,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
                     (int)page.getBBox().height());
 
             //generate the image
-            Bitmap img = page.getImage((int) rect.width, (int) rect.height, null, true, true);
+//            Bitmap img = page.getImage((int) rect.width, (int) rect.height, null, true, true);
 
             Log.d("metadata", "check2");
             if (reader.getMetadata() != null){
@@ -245,6 +238,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("metadata:", st);
             }
             //
+            BookDetail bookD = new BookDetail();
             Map info = reader.getInfo();
             for (Iterator i = info.keySet().iterator(); i.hasNext();) {
                 String key = (String) i.next();
@@ -254,16 +248,19 @@ public class MainActivity extends AppCompatActivity {
            // Log.d("reader", reader.getMetadata().toString()+"hj"+st);
             //Log.d("catalog", reader.getCatalog() + "jhf");
           //  System.out.println("reader.getPageResources(0)"+reader.getPageResources(0));
-            BookDetail bookD = new BookDetail();
-            bookD.bookName = "j";
-            bookD.authorName = "uy";
-            bookD.bookDescription = "Deatialed Book";
-            bookD.bookIcon = R.drawable.comic;
 
+            bookD.bookName = "Book Name";
+            bookD.authorName = "Vijay Rastogi";
+            bookD.bookDescription = "Comic Book";
+            bookD.bookIcon = R.drawable.comic;
+            bookD.bookPrice = "5 Rs";
+            bookD.bookISBN = "ISBN Number";
+            bookD.bookPublishedDate = "22/3/15";
+            bookD.bookPublisher = "Vipul and Co.";
             //File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook/" + listFile[i].getName() );
 
-
-            bookD.bookFilePath = directory.getAbsolutePath(); //listFile[i].getName();
+            URL url = directory.toURI().toURL();
+            bookD.bookFilePath = url; //directory.getAbsolutePath(); //listFile[i].getName();
             bookDetailArrayList.add(bookD);
            // reader.getMetadata();
         } catch (IOException e) {
@@ -271,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void showBook(File bookPath, BookDetail bookDetail){
+    public void showBook(BookDetail bookDetail){
         Intent intent = new Intent(MainActivity.this,BookDetailActivity.class);
         Bundle information = new Bundle();
 
@@ -280,26 +277,6 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtras(information);
         startActivity(intent);
 
-        /*PackageManager packageManager = getPackageManager();
-
-        Intent   testIntent = new Intent(Intent.ACTION_VIEW);
-        testIntent.setType("application/pdf");
-
-
-        List list = packageManager.queryIntentActivities(testIntent,
-                PackageManager.MATCH_DEFAULT_ONLY);
-
-       // Intent intent = new Intent();
-       // intent.setAction(Intent.ACTION_VIEW);
-
-       // File fileToRead = new File(
-            //    "/data/data/com.example.filedownloader/app_books/Book.pdf");
-        Uri uri = Uri.fromFile(bookPath.getAbsoluteFile());
-
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-         intent.setDataAndType(uri, "application/epub+zip");
-       // intent.setDataAndType(uri, "application/pdf");
-        startActivity(intent);*/
     }
 
     @Override
@@ -360,13 +337,14 @@ public class MainActivity extends AppCompatActivity {
 
         switch (position) {
             case 0:
-                Intent intent = new Intent(MainActivity.this,BookDetailActivity.class);
+
+                break;
+            case 1:
+                Intent intent = new Intent(MainActivity.this,MoviesViewActivity.class);
                 Bundle information = new Bundle();
 
                 intent.putExtras(information);
                 startActivity(intent);
-                break;
-            case 1:
                 break;
             case 2:
                 break;

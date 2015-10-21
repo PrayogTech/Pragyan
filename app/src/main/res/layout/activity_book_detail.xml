@@ -59,6 +59,7 @@
             android:src="@drawable/comic" />
 
         <LinearLayout
+            android:id="@+id/bookDataLinearLayout"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -119,42 +120,52 @@
 
         </LinearLayout>
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_below="@+id/bookImageView">
+
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/bookImageView"
+            android:padding="6dp"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignBottom="@+id/bookImageView"
-            android:id="@+id/linearLayout2">
+            android:id="@+id/linearLayout2"
+            >
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Description"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:text="Description "
+                android:textColor="#111111"
+                android:textSize="14sp"
+                android:layout_gravity="left"
                 android:id="@+id/descriptionTextView" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/linearLayout2"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true">
+            >
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Price"
+                android:padding="6dp"
                 android:id="@+id/priceTextView" />
 
             <Button
                 android:id="@+id/sampleButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:text="Read Sample Book"
                 />
 
@@ -162,10 +173,11 @@
                 android:id="@+id/buyButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:text="Get Full Book"
                  />
         </LinearLayout>
-
+        </RelativeLayout>
     </RelativeLayout>
     </RelativeLayout>
 </ScrollView>

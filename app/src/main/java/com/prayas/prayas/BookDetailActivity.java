@@ -19,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +41,7 @@ public class BookDetailActivity extends AppCompatActivity {
        // getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
         setContentView(R.layout.activity_book_detail);
         android.support.v7.app.ActionBar topBar =  getDelegate().getSupportActionBar();
-        getSupportActionBar().setTitle("My new title");
+        getSupportActionBar().setTitle("Book Details");
         Drawable drawable;
        // int decode = Integer.decode("3F51B5");
         drawable = new ColorDrawable(0xFF3F51B5);
@@ -72,13 +74,16 @@ public class BookDetailActivity extends AppCompatActivity {
                         PackageManager.MATCH_DEFAULT_ONLY);
 
 
-                File directory = new File(bookData.bookFilePath);
-                Uri uri = Uri.fromFile(directory.getAbsoluteFile());
+               // File directory = new File(bookData.bookFilePath);
 
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-             //   intent.setDataAndType(uri, "application/epub+zip");
-                intent.setDataAndType(uri, "application/pdf");
-                startActivity(intent);
+                    File urlFile = new File(bookData.bookFilePath.getFile());
+                    Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
+
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    //   intent.setDataAndType(uri, "application/epub+zip");
+                    intent.setDataAndType(uri, "application/pdf");
+                    startActivity(intent);
+
             }
         });
 
@@ -88,7 +93,7 @@ public class BookDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
 
             //TODO: add popup
-
+            showAlertForPurchase();
             }
         });
 
@@ -146,7 +151,7 @@ public class BookDetailActivity extends AppCompatActivity {
     public  void showAlertForPurchase(){
         AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
 
-        String message = "Purchase " + bookTitleTV.getText() + "for just " + bookPriceTV.getText() + " !!";
+        String message = "Purchase " + bookTitleTV.getText() + " for just " + bookPriceTV.getText() + " !!";
         builder1.setMessage(message);
         builder1.setCancelable(true);
         builder1.setPositiveButton("BUY",
@@ -161,8 +166,9 @@ public class BookDetailActivity extends AppCompatActivity {
                         Date dateobj = new Date();
                         bookPurchaseData.orderDate = dateobj;
 
-                        File directory = new File(bookData.bookFilePath);
-                        Uri uri = Uri.fromFile(directory.getAbsoluteFile());
+
+                        File urlFile = new File(bookData.bookFilePath.getFile());
+                        Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
 
                         Intent intent = new Intent(Intent.ACTION_VIEW);
                         //   intent.setDataAndType(uri, "application/epub+zip");

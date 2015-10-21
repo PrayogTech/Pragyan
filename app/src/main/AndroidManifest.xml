@@ -25,7 +25,16 @@
         <activity
             android:name=".BookDetailActivity"
             android:label="@string/title_activity_book_detail"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".MoviesViewActivity"
+            android:label="@string/title_activity_movies_view"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".GamesViewActivity"
+            android:label="@string/title_activity_games_view" >
         </activity>
     </application>
 
