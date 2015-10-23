@@ -12,5 +12,9 @@ public class MovieDetail {
     String mimeType;
     String thumbPath;
     String movieDuration;
+    String movieDescription;
+    String movieTags;
+    String moviePrice;
+
     //int previewImage;
 }

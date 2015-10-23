@@ -17,12 +17,14 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 public class BookDetailActivity extends AppCompatActivity {
@@ -159,21 +161,38 @@ public class BookDetailActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
 
-                        UssageDetail bookPurchaseData = new UssageDetail();
-                        bookPurchaseData.ussageId = bookData.bookISBN;
-                        bookPurchaseData.dataType = "BOOK_PURCHASE";
-                        bookPurchaseData.dataMessage = "You have purchased " + bookData.bookName + "at " + bookData.bookPrice;
-                        Date dateobj = new Date();
-                        bookPurchaseData.orderDate = dateobj;
+                        ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+                        Boolean purchaseStatus = false;
 
+                        if (ussageList.size() > 0) {
+                            Iterator<UssageDetail> iterator = ussageList.iterator();
+                            while (iterator.hasNext()) {
+                                UssageDetail ussageInfo = iterator.next();
+                                if (ussageInfo.ussageId == bookData.bookISBN && ussageInfo.dataType == "BOOK_PURCHASE") {
+                                    purchaseStatus = true;
+                                    Toast.makeText(activity, "You have already purchased this book", Toast.LENGTH_SHORT).show();
+                                    break;
+                                }
+                            }
+                        }
+                        if (!purchaseStatus) {
+                            UssageDetail bookPurchaseData = new UssageDetail();
+                            bookPurchaseData.ussageId = bookData.bookISBN;
+                            bookPurchaseData.dataType = "BOOK_PURCHASE";
+                            bookPurchaseData.dataMessage = "You have purchased " + bookData.bookName + "at " + bookData.bookPrice;
+                            Date dateobj = new Date();
+                            bookPurchaseData.orderDate = dateobj;
 
-                        File urlFile = new File(bookData.bookFilePath.getFile());
-                        Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
+                            MyUsedData.getInstance().getUsedDataList().add(bookPurchaseData);
 
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        //   intent.setDataAndType(uri, "application/epub+zip");
-                        intent.setDataAndType(uri, "application/pdf");
-                        startActivity(intent);
+                            File urlFile = new File(bookData.bookFilePath.getFile());
+                            Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
+
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            //   intent.setDataAndType(uri, "application/epub+zip");
+                            intent.setDataAndType(uri, "application/pdf");
+                            startActivity(intent);
+                        }
                     }
                 });
         builder1.setNegativeButton("CANCEL",
@@ -186,6 +205,7 @@ public class BookDetailActivity extends AppCompatActivity {
         AlertDialog alert11 = builder1.create();
         alert11.show();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

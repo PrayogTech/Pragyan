@@ -24,4 +24,12 @@ public class MyUsedData {
         }
         return mInstance;
     }
+
+    public ArrayList<UssageDetail> getUsedDataList() {
+        return usedDataList;
+    }
+
+    public void setUsedDataList(ArrayList<UssageDetail> usedDataList) {
+        this.usedDataList = usedDataList;
+    }
 }

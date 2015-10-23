@@ -36,6 +36,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,12 +52,15 @@ public class MainActivity extends AppCompatActivity {
 
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mTitle;
-    private String[] mPlanetTitles;
+    private String[] mStoreTitles;
+    private String[] mAppTitles;
+    private  String[] mSectionTitles;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private Toolbar toolbar;
-    private ArrayAdapter<String> mAdapter;
+    private DrawerAdapter mAdapter;
 
+    private HashMap<String, String> drawerItems = new HashMap<>();
     @Override
     protected void onResume() {
         super.onResume();
@@ -73,13 +77,61 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mContext = this;
 
-        mPlanetTitles = new String[]{"Books", "Movies", "Games", "Food", "Social"};
+        mStoreTitles = new String[]{"Books", "Movies", "Games", "Food" };
+        mAppTitles = new String[]{"About", "Send Feedback", "Contact" };
+        mSectionTitles = new String []{"ACTIVITIES", "EXPLORE STORE", "Prayas"};
+
+        drawerItems.put("SECTION", mSectionTitles[0]);
+        drawerItems.put("ITEM","My Store");
+        drawerItems.put("ITEM","My Store");
+
+
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
-        Log.d("log", "test" + mPlanetTitles.length);
+
+        mAdapter = new DrawerAdapter(this);
+
+        int menuItemCount = mSectionTitles.length + mStoreTitles.length + mAppTitles.length;
+
+        for (int i = 0; i < menuItemCount; i++) {
+
+            switch (i){
+                case 0:
+                  break;
+                case 1:
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+                case 5:
+                    break;
+                case 6:
+                    break;
+                case 7:
+                    break;
+                case 8:
+                    break;
+                case 9:
+                    break;
+                case 10:
+                    break;
+                default:
+                    break;
+            }
+            mAdapter.addSectionHeaderItem(mSectionTitles[i]);
+        }
+        for (int i = 1; i < 30; i++) {
+            mAdapter.addItem("Row Item #" + i);
+            if (i % 4 == 0) {
+                mAdapter.addSectionHeaderItem("Section #" + i);
+            }
+        }
 
         // Set the adapter for the list view
-        mAdapter = new ArrayAdapter<String>(this, R.layout.drawer_list_item, mPlanetTitles);
+      //  mAdapter = new ArrayAdapter<String>(this, R.layout.drawer_list_item, mPlanetTitles);
         Log.d("log", "test" + mAdapter + "/////" + mDrawerList);
         mDrawerList.setAdapter(mAdapter);
         // Set the list's click listener
@@ -330,23 +382,33 @@ public class MainActivity extends AppCompatActivity {
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
-        setTitle(mPlanetTitles[position]);
+        setTitle(mStoreTitles[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
 
         Log.d("position", position + "");
-
+        Intent intent;
+        Bundle information = new Bundle();
         switch (position) {
             case 0:
 
                 break;
             case 1:
-                Intent intent = new Intent(MainActivity.this,MoviesViewActivity.class);
-                Bundle information = new Bundle();
+               intent  = new Intent(MainActivity.this,MoviesViewActivity.class);
 
                 intent.putExtras(information);
                 startActivity(intent);
                 break;
             case 2:
+                 intent = new Intent(MainActivity.this,GamesViewActivity.class);
+
+                intent.putExtras(information);
+                startActivity(intent);
+                break;
+            case 3:
+                intent = new Intent(MainActivity.this,MyOrdersActivity.class);
+
+                intent.putExtras(information);
+                startActivity(intent);
                 break;
             default:
                 break;

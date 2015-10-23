@@ -1,7 +1,9 @@
 package com.prayas.prayas;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
@@ -17,9 +19,12 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 
 public class MoviesViewActivity extends AppCompatActivity  {
 
@@ -62,7 +67,9 @@ public class MoviesViewActivity extends AppCompatActivity  {
                 MediaStore.Video.Media.DATA,
                 MediaStore.Video.Media.MIME_TYPE,
                 MediaStore.Video.Media.ARTIST,
-                MediaStore.Video.Media.DURATION
+                MediaStore.Video.Media.DURATION,
+                MediaStore.Video.Media.DESCRIPTION,
+                MediaStore.Video.Media.TAGS
         };
         ContentResolver resolver = getContentResolver();
         if (resolver == null) {
@@ -136,22 +143,68 @@ public class MoviesViewActivity extends AppCompatActivity  {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     //TODO: TBD
-
                     MovieDetail viewHolder = (MovieDetail) view.getTag(R.id.folder_holder);
-
-                   // int fileColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA);
-                   // int mimeColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE);
-                    //String videoFilePath = cursor.getString(fileColumn);
-                   // String mimeType = cursor.getString(mimeColumn);
-                    Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-                    File newFile = new File(viewHolder.filePath);
-                    intent.setDataAndType(Uri.fromFile(newFile), viewHolder.mimeType);
-                    startActivity(intent);
+                   showAlertForPurchase(viewHolder);
 
                 }
             });
         }
 
+    }
+
+
+    public  void showAlertForPurchase(final MovieDetail movieInfo){
+        AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
+
+        String message = "Purchase " + movieInfo.movieTitle + " for just " + movieInfo.moviePrice + " !!";
+        builder1.setMessage(message);
+        builder1.setCancelable(true);
+        builder1.setPositiveButton("BUY",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+
+                        ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+                        Boolean purchaseStatus = false;
+
+                        if (ussageList.size() > 0) {
+                            Iterator<UssageDetail> iterator = ussageList.iterator();
+                            while (iterator.hasNext()) {
+                                UssageDetail ussageInfo = iterator.next();
+                                if (ussageInfo.ussageId == movieInfo.movieId && ussageInfo.dataType == "MOVIE_PURCHASE") {
+                                    purchaseStatus = true;
+                                    Toast.makeText(activity, "You have already purchased this movie", Toast.LENGTH_SHORT).show();
+                                    break;
+                                }
+                            }
+                        }
+                        if (!purchaseStatus) {
+                            UssageDetail moviePurchaseData = new UssageDetail();
+                            moviePurchaseData.ussageId = movieInfo.movieId;
+                            moviePurchaseData.dataType = "MOVIE_PURCHASE";
+                            moviePurchaseData.dataMessage = "You have purchased " + movieInfo.movieTitle + "at " + movieInfo.moviePrice;
+                            Date dateobj = new Date();
+                            moviePurchaseData.orderDate = dateobj;
+
+                            //Set in my ussage
+                            MyUsedData.getInstance().getUsedDataList().add(moviePurchaseData);
+
+                            Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+                            File newFile = new File(movieInfo.filePath);
+                            intent.setDataAndType(Uri.fromFile(newFile), movieInfo.mimeType);
+                            startActivity(intent);
+                        }
+                    }
+                });
+        builder1.setNegativeButton("CANCEL",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+
+        AlertDialog alert11 = builder1.create();
+        alert11.show();
     }
 
     @Override
@@ -186,7 +239,10 @@ public class MoviesViewActivity extends AppCompatActivity  {
         if (id == R.id.action_settings) {
             return true;
         }
-
+        if (id == android.R.id.home) {
+            finish();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 }
