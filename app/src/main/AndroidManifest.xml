@@ -41,6 +41,11 @@
             android:name=".MyOrdersActivity"
             android:label="@string/title_activity_my_orders" >
         </activity>
+
+        <activity
+            android:name=".MyStoresActivity"
+            android:screenOrientation="portrait">
+        </activity>
     </application>
 
 </manifest>

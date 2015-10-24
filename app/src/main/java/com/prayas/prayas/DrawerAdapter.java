@@ -19,10 +19,10 @@ public class DrawerAdapter extends BaseAdapter {
 
     private LayoutInflater mInflater;
 
-    private static final int TYPE_ITEM = 0;
-    private static final int TYPE_SEPARATOR = 1;
+    public static final int TYPE_ITEM = 0;
+    public static final int TYPE_SEPARATOR = 1;
 
-    private ArrayList<String> mData = new ArrayList<String>();
+    public ArrayList<String> mData = new ArrayList<String>();
     private TreeSet<Integer> sectionHeader = new TreeSet<Integer>();
 
     public DrawerAdapter(Context context) {
@@ -88,6 +88,7 @@ public class DrawerAdapter extends BaseAdapter {
         }
         holder.textView.setText(mData.get(position));
 
+        convertView.setTag(R.id.folder_holder, mData.get(position));
         return convertView;
     }
 

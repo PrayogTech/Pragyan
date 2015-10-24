@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -104,6 +105,24 @@ public class GamesViewActivity extends AppCompatActivity {
             return false;
         }
 
+    }
+
+
+    private class  FetchList extends AsyncTask<String, Void, List<String>>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(List<String> strings) {
+            super.onPostExecute(strings);
+        }
+
+        @Override
+        protected List<String> doInBackground(String... params) {
+            return null;
+        }
     }
 
     public  void showAlertForPurchase(final AppInfo appInfo){

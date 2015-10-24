@@ -54,13 +54,18 @@ public class MainActivity extends AppCompatActivity {
     private CharSequence mTitle;
     private String[] mStoreTitles;
     private String[] mAppTitles;
+    private String[] mActivities;
     private  String[] mSectionTitles;
+    private String[] mMenuItem;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private Toolbar toolbar;
     private DrawerAdapter mAdapter;
 
     private HashMap<String, String> drawerItems = new HashMap<>();
+   // private static final String SECTION = "SECTION";
+   // private static final String ITEM  = "ITEM";
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -77,61 +82,48 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         mContext = this;
 
+        mActivities = new String[]{"My Store", "My Order"};
         mStoreTitles = new String[]{"Books", "Movies", "Games", "Food" };
         mAppTitles = new String[]{"About", "Send Feedback", "Contact" };
-        mSectionTitles = new String []{"ACTIVITIES", "EXPLORE STORE", "Prayas"};
+        mSectionTitles = new String []{"ACTIVITIES", "EXPLORE STORE", "PRAYAS"};
 
-        drawerItems.put("SECTION", mSectionTitles[0]);
-        drawerItems.put("ITEM","My Store");
-        drawerItems.put("ITEM","My Store");
-
-
+        mMenuItem = new String []{"My Store", "My Order","Books", "Movies", "Games", "Food","About", "Send Feedback", "Contact" };
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
         mAdapter = new DrawerAdapter(this);
+        for (int i = 0; i < mSectionTitles.length; i++) {
 
-        int menuItemCount = mSectionTitles.length + mStoreTitles.length + mAppTitles.length;
-
-        for (int i = 0; i < menuItemCount; i++) {
-
+            mAdapter.addSectionHeaderItem(mSectionTitles[i]);
+            //drawerItems.put(mSectionTitles[i], SECTION);
             switch (i){
                 case 0:
-                  break;
+                    for (int item = 0; item < mActivities.length; item++) {
+                        Log.d("item menu", mActivities[item]);
+                     mAdapter.addItem(mActivities[item]);
+                       // drawerItems.put(mActivities[item], mActivities[item]);
+                    }
+                    break;
                 case 1:
+                    for (int item = 0; item < mStoreTitles.length; item++) {
+                     mAdapter.addItem(mStoreTitles[item]);
+                        //drawerItems.put(mStoreTitles[item], mStoreTitles[item]);
+                    }
                     break;
                 case 2:
+                    for (int item = 0; item < mAppTitles.length; item++) {
+                     mAdapter.addItem(mAppTitles[item]);
+                       // drawerItems.put(mAppTitles[item], mAppTitles[item]);
+                    }
                     break;
-                case 3:
-                    break;
-                case 4:
-                    break;
-                case 5:
-                    break;
-                case 6:
-                    break;
-                case 7:
-                    break;
-                case 8:
-                    break;
-                case 9:
-                    break;
-                case 10:
-                    break;
-                default:
-                    break;
+                    default:
+                        break;
             }
-            mAdapter.addSectionHeaderItem(mSectionTitles[i]);
-        }
-        for (int i = 1; i < 30; i++) {
-            mAdapter.addItem("Row Item #" + i);
-            if (i % 4 == 0) {
-                mAdapter.addSectionHeaderItem("Section #" + i);
-            }
+
         }
 
         // Set the adapter for the list view
-      //  mAdapter = new ArrayAdapter<String>(this, R.layout.drawer_list_item, mPlanetTitles);
+       // mAdapter = new ArrayAdapter<String>(this, R.layout.drawer_list_item, mStoreTitles);
         Log.d("log", "test" + mAdapter + "/////" + mDrawerList);
         mDrawerList.setAdapter(mAdapter);
         // Set the list's click listener
@@ -377,35 +369,41 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Swaps fragments in the main content view
      */
-    private void selectItem(int position) {
-        Toast.makeText(this, R.string.app_name, Toast.LENGTH_SHORT).show();
+    private void selectItem(int position, String menuItem) {
+       // Toast.makeText(this, R.string.app_name, Toast.LENGTH_SHORT).show();
 
         // Highlight the selected item, update the title, and close the drawer
         mDrawerList.setItemChecked(position, true);
-        setTitle(mStoreTitles[position]);
+      //  setTitle(mMenuItem[position]);
         mDrawerLayout.closeDrawer(mDrawerList);
 
         Log.d("position", position + "");
         Intent intent;
         Bundle information = new Bundle();
-        switch (position) {
-            case 0:
-
-                break;
-            case 1:
-               intent  = new Intent(MainActivity.this,MoviesViewActivity.class);
+        switch (menuItem) {
+            case "My Store":
+                intent = new Intent(MainActivity.this,MyStoresActivity.class);
 
                 intent.putExtras(information);
                 startActivity(intent);
                 break;
-            case 2:
-                 intent = new Intent(MainActivity.this,GamesViewActivity.class);
-
-                intent.putExtras(information);
-                startActivity(intent);
-                break;
-            case 3:
+            case "My Order":
                 intent = new Intent(MainActivity.this,MyOrdersActivity.class);
+
+                intent.putExtras(information);
+                startActivity(intent);
+                break;
+            case "Books":
+
+                break;
+            case "Movies":
+                intent  = new Intent(MainActivity.this,MoviesViewActivity.class);
+
+                intent.putExtras(information);
+                startActivity(intent);
+                break;
+            case "Games":
+                intent = new Intent(MainActivity.this,GamesViewActivity.class);
 
                 intent.putExtras(information);
                 startActivity(intent);
@@ -413,7 +411,6 @@ public class MainActivity extends AppCompatActivity {
             default:
                 break;
         }
-
 
     }
 
@@ -429,7 +426,9 @@ public class MainActivity extends AppCompatActivity {
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView parent, View view, int position, long id) {
-            selectItem(position);
+
+            String item = (String) view.getTag(R.id.folder_holder);
+            selectItem(position, item);
         }
     }
 
