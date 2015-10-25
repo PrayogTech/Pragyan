@@ -6,6 +6,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
@@ -14,6 +15,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,7 +29,24 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -58,7 +77,7 @@ public class GamesViewActivity extends AppCompatActivity {
         activity = this;
 
         renderAvailableGames();
-
+        //new FetchList().execute();
         gamesListView = (ListView) findViewById(R.id.gamesListView);
 
         GamesAdapter gamesAdapter = new GamesAdapter(activity, appInfoArrayList);
@@ -78,12 +97,14 @@ public class GamesViewActivity extends AppCompatActivity {
         Iterator<PackageInfo> iterator = applist.iterator();
         while (iterator.hasNext()) {
             PackageInfo pk = iterator.next();
-            if(!isThisASystemPackage(activity, pk)){
+            if(!isSystemPackage(pk)){
                 String appName = pk.applicationInfo.loadLabel(packageManager).toString();
                 String appPackage = pk.applicationInfo.packageName.toString();
                 Drawable appIcon = pk.applicationInfo.loadIcon(packageManager);
                 String urlToGetInfo = "http://googleplay-jsapi.herokuapp.com/app/" + appPackage;
-
+Log.d("app ifo", urlToGetInfo);
+                fechFromVoley(urlToGetInfo);
+               // fetchGamesData(urlToGetInfo);
                 String appId = "";
                 String appPrice = "5 Rs";
             AppInfo appInfo = new AppInfo(appId, appName, appPackage, appIcon,appPrice);
@@ -93,21 +114,111 @@ public class GamesViewActivity extends AppCompatActivity {
         }
     }
 
-    //pk.applicationInfo
-    //.loadIcon(packageManager), ""
-            //+ pk.applicationInfo.loadLabel(packageManager)
-    private static boolean isThisASystemPackage(Context context, PackageInfo  packageInfo ) {
-        try {
-            PackageInfo sys = context.getPackageManager().getPackageInfo("android", PackageManager.GET_SIGNATURES);
-            return (packageInfo != null && packageInfo.signatures != null &&
-                    sys.signatures[0].equals(packageInfo.signatures[0]));
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
+    /**
+     * Return whether the given PackgeInfo represents a system package or not.
+     * User-installed packages (Market or otherwise) should not be denoted as
+     * system packages.
+     *
+     * @param pkgInfo
+     * @return
+     */
+    private boolean isSystemPackage(PackageInfo pkgInfo) {
+        return ((pkgInfo.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+    }
+
+    private void  fechFromVoley(String url){
+      //  String url = "http://httpbin.org/get?site=code&network=tutsplus";
+
+       // String url = "http://httpbin.org/html";
+
+// Request a string response
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        // Result handling
+                        System.out.println(response.substring(0,100));
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+                // Error handling
+                System.out.println("Something went wrong!");
+                error.printStackTrace();
+
+            }
+        });
+
+// Add the request to the queue
+        Volley.newRequestQueue(this).add(stringRequest);
+       /* JsonObjectRequest jsonRequest = new JsonObjectRequest
+                (Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        // the response is already constructed as a JSONObject!
+                        try {
+                            System.out.print("repsonse:" + response);
+                            String icon = response.getString("icon");
+                            //String site = response.getString("site"),
+                              //      network = response.getString("network");
+                            System.out.println( "+icon"+icon);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+//                        Log.d("error volley", error.getLocalizedMessage());
+                        error.printStackTrace();
+                    }
+                });
+
+        Volley.newRequestQueue(this).add(jsonRequest);
+*/
 
     }
 
-
+    private void fetchGamesData(String urlString){
+        HttpURLConnection urlConnection = null;
+        URL url = null;
+        JSONObject object = null;
+        InputStream inStream = null;
+        try {
+            url = new URL(urlString.toString());
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setDoOutput(true);
+            urlConnection.setDoInput(true);
+            urlConnection.connect();
+            inStream = urlConnection.getInputStream();
+            BufferedReader bReader = new BufferedReader(new InputStreamReader(inStream));
+            String temp, response = "";
+            while ((temp = bReader.readLine()) != null) {
+                response += temp;
+            }
+            object = (JSONObject) new JSONTokener(response).nextValue();
+            Log.d("object out", object.toString());
+        } catch (Exception e) {
+            Log.d("exc", e.getLocalizedMessage());
+            //this.mException = e;
+        } finally {
+            if (inStream != null) {
+                try {
+                    // this will close the bReader as well
+                    inStream.close();
+                } catch (IOException ignored) {
+                }
+            }
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
+        }
+    }
     private class  FetchList extends AsyncTask<String, Void, List<String>>{
         @Override
         protected void onPreExecute() {
@@ -117,10 +228,13 @@ public class GamesViewActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<String> strings) {
             super.onPostExecute(strings);
+            Log.d("on post", "exe");
+
         }
 
         @Override
         protected List<String> doInBackground(String... params) {
+            renderAvailableGames();
             return null;
         }
     }
@@ -145,7 +259,7 @@ public class GamesViewActivity extends AppCompatActivity {
                                 UssageDetail ussageInfo = iterator.next();
                                 if (ussageInfo.ussageId == appInfo.appId && ussageInfo.dataType == "GAMES_PURCHASE") {
                                     purchaseStatus = true;
-                                    Toast.makeText(activity, "You have already purchased this movie", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(activity, "You have already purchased this game", Toast.LENGTH_SHORT).show();
                                     break;
                                 }
                             }

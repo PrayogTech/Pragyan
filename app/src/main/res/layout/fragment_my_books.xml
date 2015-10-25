@@ -2,14 +2,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#122112"
+    android:background="#d2d2d2"
     tools:context="com.prayas.prayas.MyBooksFragment">
 
 
     <GridView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/bookGridView"
-        android:background="#111111"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="22dp"
+        android:layout_marginRight="22dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:paddingBottom="20dip"
+        android:columnWidth = "150dp"
+        android:gravity="center"
+        android:horizontalSpacing="10dp"
+        android:listSelector="@android:color/transparent"
+        android:numColumns="auto_fit"
+        android:scrollbarStyle="insideOverlay"
+        android:scrollbars="horizontal"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="10dp"
+        android:background="#d2d2d2"
         android:layout_gravity="left|top" />
 </FrameLayout>

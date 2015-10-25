@@ -10,6 +10,9 @@ public class UssageDetail {
      String dataType;
      String dataMessage;
      Date orderDate;
+     BookDetail bookInfo;
+     MovieDetail movieDetail;
+     GameDetail gameDetail;
 
 
 }

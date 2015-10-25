@@ -182,11 +182,12 @@ public class BookDetailActivity extends AppCompatActivity {
                             bookPurchaseData.dataMessage = "You have purchased " + bookData.bookName + "at " + bookData.bookPrice;
                             Date dateobj = new Date();
                             bookPurchaseData.orderDate = dateobj;
+                            bookPurchaseData.bookInfo = bookData;
 
                             MyUsedData.getInstance().getUsedDataList().add(bookPurchaseData);
 
                             File urlFile = new File(bookData.bookFilePath.getFile());
-                            Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
+                            Uri uri = Uri.fromFile(urlFile);
 
                             Intent intent = new Intent(Intent.ACTION_VIEW);
                             //   intent.setDataAndType(uri, "application/epub+zip");

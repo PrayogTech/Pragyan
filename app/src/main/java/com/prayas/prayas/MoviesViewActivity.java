@@ -185,7 +185,7 @@ public class MoviesViewActivity extends AppCompatActivity  {
                             moviePurchaseData.dataMessage = "You have purchased " + movieInfo.movieTitle + "at " + movieInfo.moviePrice;
                             Date dateobj = new Date();
                             moviePurchaseData.orderDate = dateobj;
-
+                            moviePurchaseData.movieDetail = movieInfo;
                             //Set in my ussage
                             MyUsedData.getInstance().getUsedDataList().add(moviePurchaseData);
 

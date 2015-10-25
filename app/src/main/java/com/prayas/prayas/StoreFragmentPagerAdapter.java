@@ -43,7 +43,7 @@ public class StoreFragmentPagerAdapter extends FragmentPagerAdapter {
             default:
                 break;
         }
-        return MyBooksFragment.newInstance(position + 1);
+        return null;
     }
 
     @Override
