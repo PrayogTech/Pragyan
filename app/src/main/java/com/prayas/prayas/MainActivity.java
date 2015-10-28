@@ -18,19 +18,27 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
+
 import android.widget.GridView;
 import android.widget.ListView;
-import android.widget.Toast;
+
 
 import com.itextpdf.awt.geom.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
+import  com.itextpdf.*;
+import com.itextpdf.xmp.XMPException;
+import com.itextpdf.xmp.XMPMeta;
+import com.itextpdf.xmp.XMPMetaFactory;
 import com.sun.pdfview.PDFFile;
 import com.sun.pdfview.PDFPage;
+import com.sun.pdfview.PDFParser;
 
 import java.io.File;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -208,11 +216,13 @@ public class MainActivity extends AppCompatActivity {
                         //Do what ever u want
                         File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook/" + listFile[i].getName() );
                         Log.d("file name", listFile[i].getName());
+                        File sampleDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBookSample/" + listFile[i].getName() );
+
                         try {
 
                             URL url = directory.toURI().toURL();
                             Log.d("url Path", url.getPath());
-                            getPDFMetaData(url, directory);
+                            getPDFMetaData(url, directory, sampleDirectory);
                         } catch (MalformedURLException e) {
                             e.printStackTrace();
                         }
@@ -254,12 +264,16 @@ public class MainActivity extends AppCompatActivity {
 
     }*/
 
-    public void getPDFMetaData(URL bookFile, File directory){
+    public void getPDFMetaData(URL bookFile, File directory, File sampleDirectory){
+
 
         //storage/emulated/0/PrayasBook/Swift%20Quick%20Syntax%20Reference.pdf
         try {
+            Log.d("url name", bookFile.toString()+ "::file::"+ directory.toString());
             PdfReader reader = new PdfReader(bookFile);
+
             RandomAccessFile raf = new RandomAccessFile(directory, "r");
+
             FileChannel channel = raf.getChannel();
 
            net.sf.andpdf.nio.ByteBuffer buf = net.sf.andpdf.nio.ByteBuffer.NEW(channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()));
@@ -267,7 +281,8 @@ public class MainActivity extends AppCompatActivity {
 
             // draw the first page to an image
             PDFPage page = pdffile.getPage(0);
-            Log.d("metadata", "check"+page);
+
+            Log.d("metadata", "check"+page.getBBox());
             //get the width and height for the doc at the default zoom
             Rectangle rect = new Rectangle(0,0,
                     (int)page.getBBox().width(),
@@ -287,14 +302,21 @@ public class MainActivity extends AppCompatActivity {
             for (Iterator i = info.keySet().iterator(); i.hasNext();) {
                 String key = (String) i.next();
                 String value = (String) info.get(key);
+                if(key.equals("Author")){
+                    bookD.authorName = value;
+                }else if(key.equals("Title")){
+                    bookD.bookName = value;
+                }
+
                System.out.println(key + ": " + value);
             }
+
            // Log.d("reader", reader.getMetadata().toString()+"hj"+st);
             //Log.d("catalog", reader.getCatalog() + "jhf");
           //  System.out.println("reader.getPageResources(0)"+reader.getPageResources(0));
 
-            bookD.bookName = "Book Name";
-            bookD.authorName = "Vijay Rastogi";
+           // bookD.bookName = "Book Name";
+            //bookD.authorName = "Vijay Rastogi";
             bookD.bookDescription = "Comic Book";
             bookD.bookIcon = R.drawable.comic;
             bookD.bookPrice = "5 Rs";
@@ -305,11 +327,19 @@ public class MainActivity extends AppCompatActivity {
 
             URL url = directory.toURI().toURL();
             bookD.bookFilePath = url; //directory.getAbsolutePath(); //listFile[i].getName();
+            bookD.bookDiretory = directory.getAbsolutePath();
+
+            URL urlSample = sampleDirectory.toURI().toURL();
+            bookD.bookSampeFilePath = urlSample;
+            bookD.bookSampleDirectory = sampleDirectory.getAbsolutePath();
+
             bookDetailArrayList.add(bookD);
            // reader.getMetadata();
         } catch (IOException e) {
+            Log.d("url exception", bookFile.toString());
             e.printStackTrace();
         }
+
     }
 
     public void showBook(BookDetail bookDetail){
@@ -407,6 +437,13 @@ public class MainActivity extends AppCompatActivity {
 
                 intent.putExtras(information);
                 startActivity(intent);
+                break;
+            case "Food":
+                String packageName = "com.cymaxtec.restomenu";
+                intent = getPackageManager().getLaunchIntentForPackage(packageName);
+                if(intent != null) {
+                    startActivity(intent);
+                }
                 break;
             default:
                 break;

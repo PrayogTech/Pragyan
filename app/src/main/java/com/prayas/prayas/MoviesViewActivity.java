@@ -119,6 +119,8 @@ public class MoviesViewActivity extends AppCompatActivity  {
                         movieInfo.thumbPath = thumbCursor.getString(thumbCursor
                                 .getColumnIndex(MediaStore.Video.Thumbnails.DATA));
                         Log.v("", movieInfo.thumbPath);
+                    }else {
+                        Toast.makeText(activity,  "Thumbnail not found", Toast.LENGTH_SHORT).show();
                     }
 
                     movieInfo.filePath = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA));
@@ -144,8 +146,29 @@ public class MoviesViewActivity extends AppCompatActivity  {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     //TODO: TBD
                     MovieDetail viewHolder = (MovieDetail) view.getTag(R.id.folder_holder);
-                   showAlertForPurchase(viewHolder);
 
+                    ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+                    Boolean purchaseStatus = false;
+
+                    if (ussageList.size() > 0) {
+                        Iterator<UssageDetail> iterator = ussageList.iterator();
+                        while (iterator.hasNext()) {
+                            UssageDetail ussageInfo = iterator.next();
+                            if (ussageInfo.ussageId == viewHolder.movieId && ussageInfo.dataType == "MOVIE_PURCHASE") {
+                                purchaseStatus = true;
+
+                                Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+                                File newFile = new File(viewHolder.filePath);
+                                intent.setDataAndType(Uri.fromFile(newFile), viewHolder.mimeType);
+                                startActivity(intent);
+                                //Toast.makeText(activity, "You have already purchased this movie", Toast.LENGTH_SHORT).show();
+                                break;
+                            }
+                        }
+                    }
+                    if (!purchaseStatus) {
+                        showAlertForPurchase(viewHolder);
+                    }
                 }
             });
         }
@@ -153,7 +176,7 @@ public class MoviesViewActivity extends AppCompatActivity  {
     }
 
 
-    public  void showAlertForPurchase(final MovieDetail movieInfo){
+    public  void showAlertForPurchase(final MovieDetail movieInfo ){
         AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
 
         String message = "Purchase " + movieInfo.movieTitle + " for just " + movieInfo.moviePrice + " !!";
@@ -164,21 +187,6 @@ public class MoviesViewActivity extends AppCompatActivity  {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
 
-                        ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
-                        Boolean purchaseStatus = false;
-
-                        if (ussageList.size() > 0) {
-                            Iterator<UssageDetail> iterator = ussageList.iterator();
-                            while (iterator.hasNext()) {
-                                UssageDetail ussageInfo = iterator.next();
-                                if (ussageInfo.ussageId == movieInfo.movieId && ussageInfo.dataType == "MOVIE_PURCHASE") {
-                                    purchaseStatus = true;
-                                    Toast.makeText(activity, "You have already purchased this movie", Toast.LENGTH_SHORT).show();
-                                    break;
-                                }
-                            }
-                        }
-                        if (!purchaseStatus) {
                             UssageDetail moviePurchaseData = new UssageDetail();
                             moviePurchaseData.ussageId = movieInfo.movieId;
                             moviePurchaseData.dataType = "MOVIE_PURCHASE";
@@ -193,7 +201,7 @@ public class MoviesViewActivity extends AppCompatActivity  {
                             File newFile = new File(movieInfo.filePath);
                             intent.setDataAndType(Uri.fromFile(newFile), movieInfo.mimeType);
                             startActivity(intent);
-                        }
+
                     }
                 });
         builder1.setNegativeButton("CANCEL",

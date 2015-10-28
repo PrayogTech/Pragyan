@@ -68,23 +68,21 @@ public class BookDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
                 PackageManager packageManager = getPackageManager();
 
-                Intent   testIntent = new Intent(Intent.ACTION_VIEW);
-                testIntent.setType("application/pdf");
+                if (bookData.bookSampleDirectory != null && !bookData.bookSampleDirectory.equals("")) {
 
+                    File directory = new File(bookData.bookSampleDirectory);
 
-                List list = packageManager.queryIntentActivities(testIntent,
-                        PackageManager.MATCH_DEFAULT_ONLY);
-
-
-               // File directory = new File(bookData.bookFilePath);
-
-                    File urlFile = new File(bookData.bookFilePath.getFile());
-                    Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
+                    Uri uri = Uri.fromFile(directory.getAbsoluteFile());
+                    // File urlFile = new File(bookData.bookFilePath.getFile());
+                    //  Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
 
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     //   intent.setDataAndType(uri, "application/epub+zip");
                     intent.setDataAndType(uri, "application/pdf");
                     startActivity(intent);
+                }else {
+                    Toast.makeText(activity, "Sample Book Not found", Toast.LENGTH_SHORT).show();
+                }
 
             }
         });
@@ -95,7 +93,33 @@ public class BookDetailActivity extends AppCompatActivity {
             public void onClick(View v) {
 
             //TODO: add popup
-            showAlertForPurchase();
+                ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+                Boolean purchaseStatus = false;
+
+                if (ussageList.size() > 0) {
+                    Iterator<UssageDetail> iterator = ussageList.iterator();
+                    while (iterator.hasNext()) {
+                        UssageDetail ussageInfo = iterator.next();
+                        if (ussageInfo.ussageId == bookData.bookISBN && ussageInfo.dataType == "BOOK_PURCHASE") {
+                            purchaseStatus = true;
+
+                            // File urlFile = new File(bookData.bookFilePath.getFile());
+                            // Uri uri = Uri.fromFile(urlFile);
+                            File directory = new File(bookData.bookDiretory);
+                            Uri uri = Uri.fromFile(directory.getAbsoluteFile());
+
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            //   intent.setDataAndType(uri, "application/epub+zip");
+                            intent.setDataAndType(uri, "application/pdf");
+                            startActivity(intent);
+                            //  Toast.makeText(activity, "You have already purchased this book", Toast.LENGTH_SHORT).show();
+                            break;
+                        }
+                    }
+                }
+                if(!purchaseStatus) {
+                    showAlertForPurchase();
+                }
             }
         });
 
@@ -161,39 +185,25 @@ public class BookDetailActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
 
-                        ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
-                        Boolean purchaseStatus = false;
+                        UssageDetail bookPurchaseData = new UssageDetail();
+                        bookPurchaseData.ussageId = bookData.bookISBN;
+                        bookPurchaseData.dataType = "BOOK_PURCHASE";
+                        bookPurchaseData.dataMessage = "You have purchased " + bookData.bookName + "at " + bookData.bookPrice;
+                        Date dateobj = new Date();
+                        bookPurchaseData.orderDate = dateobj;
+                        bookPurchaseData.bookInfo = bookData;
 
-                        if (ussageList.size() > 0) {
-                            Iterator<UssageDetail> iterator = ussageList.iterator();
-                            while (iterator.hasNext()) {
-                                UssageDetail ussageInfo = iterator.next();
-                                if (ussageInfo.ussageId == bookData.bookISBN && ussageInfo.dataType == "BOOK_PURCHASE") {
-                                    purchaseStatus = true;
-                                    Toast.makeText(activity, "You have already purchased this book", Toast.LENGTH_SHORT).show();
-                                    break;
-                                }
-                            }
-                        }
-                        if (!purchaseStatus) {
-                            UssageDetail bookPurchaseData = new UssageDetail();
-                            bookPurchaseData.ussageId = bookData.bookISBN;
-                            bookPurchaseData.dataType = "BOOK_PURCHASE";
-                            bookPurchaseData.dataMessage = "You have purchased " + bookData.bookName + "at " + bookData.bookPrice;
-                            Date dateobj = new Date();
-                            bookPurchaseData.orderDate = dateobj;
-                            bookPurchaseData.bookInfo = bookData;
+                        MyUsedData.getInstance().getUsedDataList().add(bookPurchaseData);
 
-                            MyUsedData.getInstance().getUsedDataList().add(bookPurchaseData);
+                        //File urlFile = new File(bookData.bookFilePath.getFile());
+                        // Uri uri = Uri.fromFile(urlFile);
+                        File directory = new File(bookData.bookDiretory);
+                        Uri uri = Uri.fromFile(directory.getAbsoluteFile());
 
-                            File urlFile = new File(bookData.bookFilePath.getFile());
-                            Uri uri = Uri.fromFile(urlFile);
-
-                            Intent intent = new Intent(Intent.ACTION_VIEW);
-                            //   intent.setDataAndType(uri, "application/epub+zip");
-                            intent.setDataAndType(uri, "application/pdf");
-                            startActivity(intent);
-                        }
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        //   intent.setDataAndType(uri, "application/epub+zip");
+                        intent.setDataAndType(uri, "application/pdf");
+                        startActivity(intent);
                     }
                 });
         builder1.setNegativeButton("CANCEL",

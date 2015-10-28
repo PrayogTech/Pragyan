@@ -78,7 +78,7 @@ public class MyMoviesFragment extends android.support.v4.app.Fragment {
 
         moviesListView = (ListView) view.findViewById(R.id.movieListView);
         renderView();
-        super.onViewCreated(view, savedInstanceState);
+       // super.onViewCreated(view, savedInstanceState);
     }
     @Override
     public void setUserVisibleHint(boolean isVisibleToUser) {

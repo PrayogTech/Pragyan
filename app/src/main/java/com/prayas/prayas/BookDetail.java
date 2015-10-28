@@ -19,4 +19,8 @@ public class BookDetail implements Serializable {
     String bookPrice = "";
     String bookDescription = "";
     URL bookFilePath;
+    String bookDiretory;
+    URL bookSampeFilePath;
+    String bookSampleDirectory;
+
 }

@@ -72,7 +72,7 @@ public class MyBooksFragment extends android.support.v4.app.Fragment {
 
         bookGridView = (GridView) view.findViewById(R.id.bookGridView);
         renderView();
-        super.onViewCreated(view, savedInstanceState);
+       // super.onViewCreated(view, savedInstanceState);
     }
 
     @Override
