@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".MainActivity">
+    tools:context="com.prayas.prayas.MyStoresActivity">
 
     <android.support.design.widget.CoordinatorLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -23,16 +23,13 @@
                 android:layout_height="?attr/actionBarSize"
                 android:background="?attr/colorPrimary"
                 app:layout_scrollFlags="scroll|enterAlways"
-
                 >
-
             </android.support.v7.widget.Toolbar>
-
 
         </android.support.design.widget.AppBarLayout>
 
     <!-- The main content view -->
-    <include layout="@layout/content_main" />
+    <include layout="@layout/activity_my_stores" />
 </android.support.design.widget.CoordinatorLayout>
     <!-- The navigation drawer -->
 

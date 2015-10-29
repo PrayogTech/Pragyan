@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -16,10 +17,15 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 public class MyBooksFragment extends android.support.v4.app.Fragment {
     public static final String ARG_PAGE = "ARG_PAGE";
@@ -33,6 +39,10 @@ public class MyBooksFragment extends android.support.v4.app.Fragment {
     private ArrayList<BookDetail> bookDetailArrayList = new ArrayList<>();
 
     boolean _areBooksLoaded = false;
+
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    SharedPreferences sharedpreferences;
 
     public static MyBooksFragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -89,36 +99,45 @@ public class MyBooksFragment extends android.support.v4.app.Fragment {
 
         bookDetailArrayList.clear();
        // bookGridView = (GridView) getView().findViewById(R.id.bookGridView);
-        ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
-        if (ussageList.size() > 0) {
-            Iterator<UssageDetail> iterator = ussageList.iterator();
-            while (iterator.hasNext()) {
-                UssageDetail ussageInfo = iterator.next();
-                if (ussageInfo.dataType == "BOOK_PURCHASE") {
-                    bookDetailArrayList.add(ussageInfo.bookInfo);
+       // ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+
+        sharedpreferences = mContext.getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
+
+        String jsonCartList =  sharedpreferences.getString("order", "");
+        if (!jsonCartList.equals("")) {
+            Type t = new TypeToken<List<UssageDetail>>() {}.getType();
+            ArrayList<UssageDetail> ussageList =  (ArrayList<UssageDetail>)gson.fromJson(jsonCartList, t);
+            Log.d("mook ", ussageList.toString());
+                Iterator<UssageDetail> iterator = ussageList.iterator();
+                while (iterator.hasNext()) {
+                    UssageDetail ussageInfo = iterator.next();
+                    if (ussageInfo.dataType == "BOOK_PURCHASE") {
+                        Log.d("book data", ussageInfo.bookInfo.toString());
+                        bookDetailArrayList.add(ussageInfo.bookInfo);
+                    }
+                }
+
+                if (bookDetailArrayList.size() > 0) {
+                    bookGridAdapter = new BookGridAdapter(mContext, bookDetailArrayList);
+                    Log.d("fragment", bookGridAdapter.toString());
+                    Log.d("grid view", bookGridView.toString());
+                    bookGridView.setAdapter(bookGridAdapter);
+                    bookGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                            BookDetail viewHolder = (BookDetail) view.getTag(R.id.folder_holder);
+                            // File directory = new File(viewHolder.bookFilePath.getFile());
+                            showAlertForPurchase(viewHolder);
+
+                        }
+                    });
+                } else {
+                    Toast.makeText(mContext, "You have not purchased any book", Toast.LENGTH_SHORT).show();
                 }
             }
-            if(bookDetailArrayList.size() > 0){
-                bookGridAdapter = new BookGridAdapter(mContext,bookDetailArrayList);
-                Log.d("fragment", bookGridAdapter.toString());
-                Log.d("grid view", bookGridView.toString());
-                bookGridView.setAdapter(bookGridAdapter);
-                bookGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                        BookDetail viewHolder = (BookDetail) view.getTag(R.id.folder_holder);
-                        // File directory = new File(viewHolder.bookFilePath.getFile());
-                        showAlertForPurchase(viewHolder);
-
-                    }
-                });
-            }else{
-                Toast.makeText(mContext, "You have not purchased any book", Toast.LENGTH_SHORT).show();
-            }
-        }else {
-            Toast.makeText(mContext, "You have not purchased any book", Toast.LENGTH_SHORT).show();
-        }
     }
 
 

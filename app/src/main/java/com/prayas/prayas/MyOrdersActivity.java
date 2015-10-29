@@ -2,10 +2,12 @@ package com.prayas.prayas;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,11 +19,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 public class MyOrdersActivity extends AppCompatActivity {
 
@@ -29,6 +36,11 @@ public class MyOrdersActivity extends AppCompatActivity {
     ListView orderListView;
 
     ArrayList<OrderInfo> orderInfoArrayList = new ArrayList<>();
+
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    SharedPreferences sharedpreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,28 +57,44 @@ public class MyOrdersActivity extends AppCompatActivity {
 
         activity = this;
 
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
         renderOrderList();
     }
 
     public void renderOrderList(){
 
-        ArrayList<UssageDetail> ussageDetailArrayList =  MyUsedData.getInstance().getUsedDataList();
+       // ArrayList<UssageDetail> ussageDetailArrayList =  MyUsedData.getInstance().getUsedDataList();
 
-        Iterator iterator = ussageDetailArrayList.iterator();
-        while (iterator.hasNext()) {
 
-            UssageDetail detail = (UssageDetail) iterator.next();
-            OrderInfo orderInfo = new OrderInfo(detail.dataType, detail.dataMessage, detail.orderDate);
-            orderInfoArrayList.add(orderInfo);
+        Gson gson = new Gson();
+
+       String jsonCartList =  sharedpreferences.getString("order", "");
+        if (!jsonCartList.equals("")) {
+            //ArrayList ussageDetailArrayList = gson.fromJson(jsonCartList, ArrayList.class);
+            Type t = new TypeToken<List<UssageDetail>>() {}.getType();
+            ArrayList<UssageDetail> ussageDetailArrayList =  (ArrayList<UssageDetail>)gson.fromJson(jsonCartList, t);
+            Log.d("mook ", ussageDetailArrayList.toString());
+            Log.d("ussageDetail", ussageDetailArrayList.toString());
+            Iterator iterator = ussageDetailArrayList.iterator();
+            while (iterator.hasNext()) {
+
+                UssageDetail detail = (UssageDetail) iterator.next();
+              //  Log.d("ussage", detail.bookInfo.bookName);
+                OrderInfo orderInfo = new OrderInfo(detail.dataType, detail.dataMessage, detail.orderDate);
+                orderInfoArrayList.add(orderInfo);
+            }
+            if (orderInfoArrayList.size() > 0) {
+                orderListView = (ListView) findViewById(R.id.orderListView);
+                OrderAdapter gamesAdapter = new OrderAdapter(activity, orderInfoArrayList);
+                orderListView.setAdapter(gamesAdapter);
+            } else {
+                Toast.makeText(activity, "You have not purchased Anything", Toast.LENGTH_LONG).show();
+            }
+        }else {
+
+            Toast.makeText(activity, "You have not purchased Anything", Toast.LENGTH_LONG).show();
         }
-    if(orderInfoArrayList.size() > 0) {
-        orderListView = (ListView) findViewById(R.id.orderListView);
-        OrderAdapter gamesAdapter = new OrderAdapter(activity, orderInfoArrayList);
-        orderListView.setAdapter(gamesAdapter);
-    }else{
-        Toast.makeText(activity,"You have not purchased Anything",Toast.LENGTH_LONG).show();
-    }
-
     }
 
     private  class OrderInfo{

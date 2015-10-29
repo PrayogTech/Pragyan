@@ -14,7 +14,7 @@ public class MovieDetail {
     String movieDuration;
     String movieDescription;
     String movieTags;
-    String moviePrice;
+    String moviePrice = "Rs 5/-";
 
     //int previewImage;
 }

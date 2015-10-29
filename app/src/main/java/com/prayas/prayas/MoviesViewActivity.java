@@ -2,13 +2,18 @@ package com.prayas.prayas;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,10 +26,15 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 
 public class MoviesViewActivity extends AppCompatActivity  {
 
@@ -38,6 +48,10 @@ public class MoviesViewActivity extends AppCompatActivity  {
     private ArrayList<MovieDetail> movieDetailArrayList = new ArrayList<>();
 
     private  MoviesAdapter moviesAdapter;
+    FetchMoviesAsyncTask fetchMoviesAsynch;
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    SharedPreferences sharedpreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,10 +69,115 @@ public class MoviesViewActivity extends AppCompatActivity  {
 
         activity = this;
 
-        MakeCursor();
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
+        loadMoviesList();
+       // MakeCursor();
 
     }
 
+
+    class FetchMoviesAsyncTask extends AsyncTask<String, String, String>{
+
+        /** progress dialog to show user that the backup is processing. */
+        private ProgressDialog dialog;
+        /** application context. */
+        private MoviesViewActivity activity;
+
+        public FetchMoviesAsyncTask(MoviesViewActivity mActivity) {
+            activity = mActivity;
+            dialog = new ProgressDialog(activity);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            dialog.setMessage("Fetching Movies...");
+            dialog.show();
+        }
+        @Override
+        protected String doInBackground(String... params) {
+            MakeCursor();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            if (dialog.isShowing()) {
+                dialog.dismiss();
+            }
+
+            if(movieDetailArrayList.size() > 0) {
+                getSupportActionBar().setTitle("Movies");
+                if(moviesAdapter == null) {
+                    moviesAdapter = new MoviesAdapter(activity, movieDetailArrayList);
+                    moviesListView.setAdapter(moviesAdapter);
+                    moviesListView.setOnItemClickListener(new OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            //TODO: TBD
+                            MovieDetail viewHolder = (MovieDetail) view.getTag(R.id.folder_holder);
+
+                            // ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+                            Gson gson = new Gson();
+                            Boolean purchaseStatus = false;
+                            String jsonCartList = sharedpreferences.getString("order", "");
+                            if (!jsonCartList.equals("")) {
+                         //  ArrayList ussageList = gson.fromJson(jsonCartList, ArrayList.class);
+                              //  List<UssageDetail> ussageList = (List<UssageDetail>) gson.fromJson(jsonCartList, UssageDetail.class);
+                                Type t = new TypeToken<List<UssageDetail>>() {}.getType();
+                                ArrayList<UssageDetail> ussageList =  (ArrayList<UssageDetail>)gson.fromJson(jsonCartList, t);
+                                Log.d("mook ", ussageList.toString());
+
+                            if (ussageList.size() > 0) {
+                                Iterator<UssageDetail> iterator = ussageList.iterator();
+                                while (iterator.hasNext()) {
+                                    UssageDetail ussageInfo = iterator.next();
+                                    if (ussageInfo.ussageId == viewHolder.movieId && ussageInfo.dataType == "MOVIE_PURCHASE") {
+                                        purchaseStatus = true;
+
+                                        Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+                                        File newFile = new File(viewHolder.filePath);
+                                        intent.setDataAndType(Uri.fromFile(newFile), viewHolder.mimeType);
+                                        startActivity(intent);
+                                        //Toast.makeText(activity, "You have already purchased this movie", Toast.LENGTH_SHORT).show();
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if(!purchaseStatus)
+
+                        {
+                            showAlertForPurchase(viewHolder);
+                        }
+                    }
+                });
+                }else{
+                    moviesAdapter = (MoviesAdapter) moviesListView.getAdapter();
+                    moviesAdapter.notifyDataSetChanged();
+                }
+
+            }else {
+                getSupportActionBar().setTitle("Movies Unavailable");
+                Toast.makeText(activity, "Movies Not Available", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void loadMoviesList(){
+
+        moviesListView = (ListView) findViewById(R.id.movieListView);
+        //Set Adapter
+        if(fetchMoviesAsynch !=null){
+
+        }else {
+            fetchMoviesAsynch = new FetchMoviesAsyncTask(this);
+            fetchMoviesAsynch.execute();
+        }
+    }
 
     private void MakeCursor() {
         String[] cols = new String[] {
@@ -82,18 +201,17 @@ public class MoviesViewActivity extends AppCompatActivity  {
             mCursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                     cols, selection , selectionArgs, mSortOrder);
 
-
             if (mCursor == null) {
                 //MusicUtils.displayDatabaseError(this);
                 //TODO: show error
                 return;
             }
 
-            if (mCursor.getCount() > 0) {
+           /* if (mCursor.getCount() > 0) {
                 getSupportActionBar().setTitle("Movies");// setTitle(R.string.videos_title);
             } else {
                 getSupportActionBar().setTitle("Movies Not Found");// setTitle(R.string.no_videos_title);
-            }
+            }*/
 
             String[] thumbColumns = { MediaStore.Video.Thumbnails.DATA,
                     MediaStore.Video.Thumbnails.VIDEO_ID };
@@ -106,8 +224,8 @@ public class MoviesViewActivity extends AppCompatActivity  {
 
                     int id = mCursor.getInt(mCursor.getColumnIndex(MediaStore.Video.Media._ID));
 
-                    MediaStore.Video.Thumbnails.getThumbnail(activity.getContentResolver(),
-                            id, MediaStore.Video.Thumbnails.MICRO_KIND, null);
+                   Bitmap media = MediaStore.Video.Thumbnails.getThumbnail(activity.getContentResolver(),
+                           id, MediaStore.Video.Thumbnails.MICRO_KIND, null);
 
                     Cursor thumbCursor = resolver.query( MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
                             thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID
@@ -118,9 +236,10 @@ public class MoviesViewActivity extends AppCompatActivity  {
                     if (thumbCursor.moveToFirst()) {
                         movieInfo.thumbPath = thumbCursor.getString(thumbCursor
                                 .getColumnIndex(MediaStore.Video.Thumbnails.DATA));
-                        Log.v("", movieInfo.thumbPath);
+                        Log.v("thumbpath", movieInfo.thumbPath);
                     }else {
-                        Toast.makeText(activity,  "Thumbnail not found", Toast.LENGTH_SHORT).show();
+                        Log.d("thumnail", "not found");
+                        //Toast.makeText(activity,  "Thumbnail not found", Toast.LENGTH_SHORT).show();
                     }
 
                     movieInfo.filePath = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA));
@@ -135,42 +254,7 @@ public class MoviesViewActivity extends AppCompatActivity  {
                 }while (mCursor.moveToNext());
             }
 
-            //Set Adapter
 
-            moviesListView = (ListView) findViewById(R.id.movieListView);
-            moviesAdapter = new MoviesAdapter(activity, movieDetailArrayList);
-
-            moviesListView.setAdapter(moviesAdapter);
-            moviesListView.setOnItemClickListener(new OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    //TODO: TBD
-                    MovieDetail viewHolder = (MovieDetail) view.getTag(R.id.folder_holder);
-
-                    ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
-                    Boolean purchaseStatus = false;
-
-                    if (ussageList.size() > 0) {
-                        Iterator<UssageDetail> iterator = ussageList.iterator();
-                        while (iterator.hasNext()) {
-                            UssageDetail ussageInfo = iterator.next();
-                            if (ussageInfo.ussageId == viewHolder.movieId && ussageInfo.dataType == "MOVIE_PURCHASE") {
-                                purchaseStatus = true;
-
-                                Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-                                File newFile = new File(viewHolder.filePath);
-                                intent.setDataAndType(Uri.fromFile(newFile), viewHolder.mimeType);
-                                startActivity(intent);
-                                //Toast.makeText(activity, "You have already purchased this movie", Toast.LENGTH_SHORT).show();
-                                break;
-                            }
-                        }
-                    }
-                    if (!purchaseStatus) {
-                        showAlertForPurchase(viewHolder);
-                    }
-                }
-            });
         }
 
     }
@@ -179,10 +263,10 @@ public class MoviesViewActivity extends AppCompatActivity  {
     public  void showAlertForPurchase(final MovieDetail movieInfo ){
         AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
 
-        String message = "Purchase " + movieInfo.movieTitle + " for just " + movieInfo.moviePrice + " !!";
+        String message = "Watch " + movieInfo.movieTitle + " for just " + movieInfo.moviePrice + " !!";
         builder1.setMessage(message);
         builder1.setCancelable(true);
-        builder1.setPositiveButton("BUY",
+        builder1.setPositiveButton("WATCH",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
@@ -190,12 +274,19 @@ public class MoviesViewActivity extends AppCompatActivity  {
                             UssageDetail moviePurchaseData = new UssageDetail();
                             moviePurchaseData.ussageId = movieInfo.movieId;
                             moviePurchaseData.dataType = "MOVIE_PURCHASE";
-                            moviePurchaseData.dataMessage = "You have purchased " + movieInfo.movieTitle + "at " + movieInfo.moviePrice;
+                            moviePurchaseData.dataMessage = "Ussage charge  of " + movieInfo.moviePrice + " will be applicable to watch " + movieInfo.movieTitle + " !!" ;
                             Date dateobj = new Date();
                             moviePurchaseData.orderDate = dateobj;
                             moviePurchaseData.movieDetail = movieInfo;
                             //Set in my ussage
                             MyUsedData.getInstance().getUsedDataList().add(moviePurchaseData);
+
+                        SharedPreferences.Editor editor = sharedpreferences.edit();
+
+                        Gson gson = new Gson();
+                        String jsonCartList = gson.toJson(MyUsedData.getInstance().getUsedDataList());
+                        editor.putString("order", jsonCartList);
+                        editor.commit();
 
                             Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
                             File newFile = new File(movieInfo.filePath);

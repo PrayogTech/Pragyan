@@ -55,8 +55,9 @@ public class BookGridAdapter extends ArrayAdapter<BookDetail> {
 
         viewHolder.nametextView.setText(item.bookName);
         viewHolder.authorTextview.setText(item.authorName);
-        Bitmap bmp = BitmapFactory.decodeResource(mContext.getResources(), item.bookIcon);
-        viewHolder.iconimageView.setImageBitmap(bmp);
+       // Bitmap bmp = BitmapFactory.decodeResource(mContext.getResources(), item.bookIcon);
+       // Bitmap bmp = BitmapFactory.decodeByteArray(item.byteArray, 0, item.byteArray.length);
+        viewHolder.iconimageView.setImageBitmap(item.bookBitmap);
         //(item.getFile_path().getDensitySizeForIcon(mC
        // viewHolder.iconimageView.setBackground(R.drawable.comic);
 

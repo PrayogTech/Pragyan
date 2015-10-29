@@ -2,14 +2,18 @@ package com.prayas.prayas;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,7 +23,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
+import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -35,6 +43,9 @@ public class BookDetailActivity extends AppCompatActivity {
     private ImageView bookImageView;
 
     private Activity activity;
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    SharedPreferences sharedpreferences;
 
     private BookDetail bookData;
     @Override
@@ -54,10 +65,17 @@ public class BookDetailActivity extends AppCompatActivity {
 
         activity = this;
 
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
         Bundle bundle = activity.getIntent().getExtras();
         if(!bundle.equals("")) {
             Intent intent = getIntent();
+
             bookData = (BookDetail) intent.getSerializableExtra("BookDetail");
+            Bitmap cover = MyUsedData.getInstance().getBookCoverBitmap();
+            if (cover != null){
+                bookData.bookBitmap = cover;
+            }
             renderBookDetail(bookData);
 
         }
@@ -77,8 +95,8 @@ public class BookDetailActivity extends AppCompatActivity {
                     //  Uri uri = Uri.fromFile(urlFile.getAbsoluteFile());
 
                     Intent intent = new Intent(Intent.ACTION_VIEW);
-                    //   intent.setDataAndType(uri, "application/epub+zip");
-                    intent.setDataAndType(uri, "application/pdf");
+                    intent.setDataAndType(uri, "application/epub+zip");
+                    //intent.setDataAndType(uri, "application/pdf");
                     startActivity(intent);
                 }else {
                     Toast.makeText(activity, "Sample Book Not found", Toast.LENGTH_SHORT).show();
@@ -92,11 +110,19 @@ public class BookDetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-            //TODO: add popup
-                ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+                //TODO: add popup
+                // ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+                Gson gson = new Gson();
                 Boolean purchaseStatus = false;
-
-                if (ussageList.size() > 0) {
+                String jsonCartList = sharedpreferences.getString("order", "");
+                if (!jsonCartList.equals("")) {
+                    Type t = new TypeToken<List<UssageDetail>>() {}.getType();
+                    ArrayList<UssageDetail> ussageList =  (ArrayList<UssageDetail>)gson.fromJson(jsonCartList, t);
+                    Log.d("mook ", ussageList.toString());
+                    if (ussageList.size() > 0) {
+                        for (UssageDetail u : ussageList){
+                            System.out.print("val stoer"+ u);
+                        }
                     Iterator<UssageDetail> iterator = ussageList.iterator();
                     while (iterator.hasNext()) {
                         UssageDetail ussageInfo = iterator.next();
@@ -109,14 +135,15 @@ public class BookDetailActivity extends AppCompatActivity {
                             Uri uri = Uri.fromFile(directory.getAbsoluteFile());
 
                             Intent intent = new Intent(Intent.ACTION_VIEW);
-                            //   intent.setDataAndType(uri, "application/epub+zip");
-                            intent.setDataAndType(uri, "application/pdf");
+                            intent.setDataAndType(uri, "application/epub+zip");
+                            //intent.setDataAndType(uri, "application/pdf");
                             startActivity(intent);
                             //  Toast.makeText(activity, "You have already purchased this book", Toast.LENGTH_SHORT).show();
                             break;
                         }
                     }
                 }
+            }
                 if(!purchaseStatus) {
                     showAlertForPurchase();
                 }
@@ -132,15 +159,17 @@ public class BookDetailActivity extends AppCompatActivity {
         bookTitleTV = (TextView) findViewById(R.id.bookTitle);
         bookAuthorTV = (TextView) findViewById(R.id.bookAuthor);
 
-        bookISBNTV = (TextView) findViewById(R.id.isbntextView);
+        bookISBNTV = (TextView) findViewById(R.id.isbnTextView);
         bookPublisherTV = (TextView) findViewById(R.id.publisherTextView);
-        bookDofPublshedTV = (TextView) findViewById(R.id.doPublishedtextView);
 
         bookDescriptionTV = (TextView) findViewById(R.id.descriptionTextView);
         bookPriceTV = (TextView) findViewById(R.id.priceTextView);
 
         bookImageView = (ImageView) findViewById(R.id.bookImageView);
 
+        if (bookDetail.bookBitmap != null){
+            bookImageView.setImageBitmap(bookDetail.bookBitmap);
+        }
         //TODO: render data
 
         if (bookDetail.bookName != ""){
@@ -159,16 +188,12 @@ public class BookDetailActivity extends AppCompatActivity {
             bookPublisherTV.setText(bookDetail.bookPublisher.trim());
         }
 
-        if (bookDetail.bookPublishedDate != ""){
-            bookDofPublshedTV.setText(bookDetail.bookPublishedDate.trim());
-        }
-
         if (bookDetail.bookDescription != ""){
             bookDescriptionTV.setText(bookDetail.bookDescription.trim());
         }
 
         if (bookDetail.bookPrice != ""){
-            bookPriceTV.setText("Price: "+bookDetail.bookPrice.trim());
+            bookPriceTV.setText("Ussage Charge : "+bookDetail.bookPrice.trim());
         }
 
 
@@ -177,10 +202,10 @@ public class BookDetailActivity extends AppCompatActivity {
     public  void showAlertForPurchase(){
         AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
 
-        String message = "Purchase " + bookTitleTV.getText() + " for just " + bookPriceTV.getText() + " !!";
+        String message =  bookPriceTV.getText() + " will be applicable " + "  for getting " + bookTitleTV.getText()  +  " !!";
         builder1.setMessage(message);
         builder1.setCancelable(true);
-        builder1.setPositiveButton("BUY",
+        builder1.setPositiveButton("OK",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
@@ -188,12 +213,19 @@ public class BookDetailActivity extends AppCompatActivity {
                         UssageDetail bookPurchaseData = new UssageDetail();
                         bookPurchaseData.ussageId = bookData.bookISBN;
                         bookPurchaseData.dataType = "BOOK_PURCHASE";
-                        bookPurchaseData.dataMessage = "You have purchased " + bookData.bookName + "at " + bookData.bookPrice;
+                        bookPurchaseData.dataMessage = "You have used " + bookData.bookName + " at " + bookData.bookPrice;
                         Date dateobj = new Date();
                         bookPurchaseData.orderDate = dateobj;
                         bookPurchaseData.bookInfo = bookData;
 
                         MyUsedData.getInstance().getUsedDataList().add(bookPurchaseData);
+
+                        SharedPreferences.Editor editor = sharedpreferences.edit();
+
+                        Gson gson = new Gson();
+                        String jsonCartList = gson.toJson(MyUsedData.getInstance().getUsedDataList());
+                        editor.putString("order", jsonCartList);
+                        editor.commit();
 
                         //File urlFile = new File(bookData.bookFilePath.getFile());
                         // Uri uri = Uri.fromFile(urlFile);
@@ -201,8 +233,8 @@ public class BookDetailActivity extends AppCompatActivity {
                         Uri uri = Uri.fromFile(directory.getAbsoluteFile());
 
                         Intent intent = new Intent(Intent.ACTION_VIEW);
-                        //   intent.setDataAndType(uri, "application/epub+zip");
-                        intent.setDataAndType(uri, "application/pdf");
+                        intent.setDataAndType(uri, "application/epub+zip");
+                        //intent.setDataAndType(uri, "application/pdf");
                         startActivity(intent);
                     }
                 });

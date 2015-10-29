@@ -6,9 +6,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +19,14 @@ import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -39,6 +46,9 @@ public class MyMoviesFragment extends android.support.v4.app.Fragment {
     private  MoviesAdapter moviesAdapter;
 
     boolean _areMoviesLoaded = false;
+
+    public static final String MyPREFERENCES = "MyPrefs" ;
+    SharedPreferences sharedpreferences;
 
     public static MyMoviesFragment newInstance(int page) {
         Bundle args = new Bundle();
@@ -92,34 +102,39 @@ public class MyMoviesFragment extends android.support.v4.app.Fragment {
     private  void  renderView(){
 
         movieDetailArrayList.clear();
-        ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
-        if (ussageList.size() > 0) {
+      //  ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
+        sharedpreferences = mContext.getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+        Gson gson = new Gson();
 
-            Iterator<UssageDetail> iterator = ussageList.iterator();
-            while (iterator.hasNext()) {
-                UssageDetail ussageInfo = iterator.next();
-                if (ussageInfo.dataType == "MOVIE_PURCHASE") {
-                    movieDetailArrayList.add(ussageInfo.movieDetail);
-                }
-            }
-            if(movieDetailArrayList.size() > 0){
-                moviesAdapter = new MoviesAdapter(mContext, movieDetailArrayList);
+        String jsonCartList =  sharedpreferences.getString("order", "");
+        if (!jsonCartList.equals("")) {
+            Type t = new TypeToken<List<UssageDetail>>() {}.getType();
+            ArrayList<UssageDetail> ussageList =  (ArrayList<UssageDetail>)gson.fromJson(jsonCartList, t);
+            Log.d("mook ", ussageList.toString());
 
-                moviesListView.setAdapter(moviesAdapter);
-                moviesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        //TODO: TBD
-                        MovieDetail viewHolder = (MovieDetail) view.getTag(R.id.folder_holder);
-                        showAlertForPurchase(viewHolder);
-
+                Iterator<UssageDetail> iterator = ussageList.iterator();
+                while (iterator.hasNext()) {
+                    UssageDetail ussageInfo = iterator.next();
+                    if (ussageInfo.dataType == "MOVIE_PURCHASE") {
+                        movieDetailArrayList.add(ussageInfo.movieDetail);
                     }
-                });
-            }else{
-                Toast.makeText(mContext, "You have not purchased any movies", Toast.LENGTH_SHORT).show();
-            }
-        }else {
-            Toast.makeText(mContext, "You have not purchased any movies", Toast.LENGTH_SHORT).show();
+                }
+                if (movieDetailArrayList.size() > 0) {
+                    moviesAdapter = new MoviesAdapter(mContext, movieDetailArrayList);
+
+                    moviesListView.setAdapter(moviesAdapter);
+                    moviesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            //TODO: TBD
+                            MovieDetail viewHolder = (MovieDetail) view.getTag(R.id.folder_holder);
+                            showAlertForPurchase(viewHolder);
+
+                        }
+                    });
+                } else {
+                    Toast.makeText(mContext, "You have not watched any movies", Toast.LENGTH_SHORT).show();
+                }
         }
     }
 

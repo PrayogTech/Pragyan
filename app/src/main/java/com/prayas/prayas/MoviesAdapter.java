@@ -74,7 +74,7 @@ public class MoviesAdapter extends ArrayAdapter<MovieDetail> {
         );
 
         viewHolder.durationTextview.setText(converted);
-        viewHolder.mimeTypeTextview.setText(item.mimeType.trim());
+        viewHolder.mimeTypeTextview.setText(item.movieArtist.trim());
         //Bitmap bmp = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.comic);
         //viewHolder.previewImageView.setImageBitmap(bmp);
 

@@ -1,5 +1,7 @@
 package com.prayas.prayas;
 
+import android.graphics.Bitmap;
+
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -12,6 +14,8 @@ public class MyUsedData {
     private static MyUsedData mInstance;
 
     private ArrayList<UssageDetail> usedDataList;
+
+    private Bitmap bookCoverBitmap;
 
     private MyUsedData(){
 
@@ -31,5 +35,16 @@ public class MyUsedData {
 
     public void setUsedDataList(ArrayList<UssageDetail> usedDataList) {
         this.usedDataList = usedDataList;
+    }
+
+    public Bitmap getBookCoverBitmap() {
+        return bookCoverBitmap;
+    }
+
+    public void setBookCoverBitmap(Bitmap bookCoverBitmap) {
+        this.bookCoverBitmap = bookCoverBitmap;
+    }
+    public  void clearBookCoverImage(){
+        this.bookCoverBitmap = null;
     }
 }

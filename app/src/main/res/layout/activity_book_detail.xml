@@ -45,6 +45,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:background="#FFFFFF"
+        android:layout_gravity="center"
+        android:layout_weight="1"
         android:layout_below="@+id/bookTitlelinearLayout"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
@@ -56,88 +58,87 @@
             android:layout_alignParentTop="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:src="@drawable/comic" />
-
-        <LinearLayout
-            android:id="@+id/bookDataLinearLayout"
-            android:orientation="vertical"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentTop="true"
-            android:layout_toRightOf="@+id/bookImageView"
-            android:layout_toEndOf="@+id/bookImageView"
-            android:layout_alignBottom="@+id/bookImageView">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ISBN"
-                android:textSize="14sp"
-                android:id="@+id/isbnNo"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="New Text"
-                android:textSize="16sp"
-                android:id="@+id/isbntextView"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:text="Publisher"
-                android:textSize="14sp"
-                android:id="@+id/publisher"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Publisher of book"
-                android:textSize="16sp"
-                android:id="@+id/publisherTextView"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingTop="8dp"
-                android:text="Published On"
-                android:textSize="14sp"
-                android:id="@+id/textView8"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Dof Publishing"
-                android:textSize="16sp"
-                android:id="@+id/doPublishedtextView"
-                android:layout_gravity="center_horizontal" />
-
-        </LinearLayout>
+            android:src="@drawable/comic"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
 
             android:layout_below="@+id/bookImageView">
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                >
+            <LinearLayout
+                android:id="@+id/firstLinear"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ISBN"
+                    android:paddingTop="8dp"
+                    android:textSize="14sp"
+                    android:id="@+id/textView2"
+                    android:layout_gravity="center_horizontal" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="New Text"
+                    android:textSize="16sp"
+                    android:paddingTop="8dp"
+                    android:layout_marginLeft="10dp"
+                    android:id="@+id/isbnTextView"
+                    android:layout_gravity="center_horizontal" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/secondLinear"
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/firstLinear"
+                >
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="8dp"
+                    android:text="Publisher"
+                    android:textSize="14sp"
+                    android:id="@+id/textView4"
+                    android:layout_gravity="left" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Publisher of book"
+                    android:paddingTop="8dp"
+                    android:textSize="16sp"
+                    android:id="@+id/publisherTextView"
+                    android:layout_marginLeft="10dp" />
+                </LinearLayout>
+            </LinearLayout>
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="6dp"
             android:layout_alignParentLeft="true"
+            android:layout_below="@+id/linearLayout"
             android:id="@+id/linearLayout2"
             >
 
             <TextView
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="wrap_content"
                 android:text="Description "
                 android:textColor="#111111"
                 android:textSize="14sp"
@@ -157,7 +158,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Price"
+                android:text=""
                 android:padding="6dp"
                 android:id="@+id/priceTextView" />
 
@@ -177,6 +178,7 @@
                 android:text="Get Full Book"
                  />
         </LinearLayout>
+
         </RelativeLayout>
     </RelativeLayout>
     </RelativeLayout>
