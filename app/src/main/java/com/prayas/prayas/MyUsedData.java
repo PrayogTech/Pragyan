@@ -16,6 +16,7 @@ public class MyUsedData {
     private ArrayList<UssageDetail> usedDataList;
 
     private Bitmap bookCoverBitmap;
+     private  Bitmap movieCoverBitmap;
 
     private MyUsedData(){
 
@@ -44,6 +45,16 @@ public class MyUsedData {
     public void setBookCoverBitmap(Bitmap bookCoverBitmap) {
         this.bookCoverBitmap = bookCoverBitmap;
     }
+
+
+    public Bitmap getMovieCoverBitmap() {
+        return movieCoverBitmap;
+    }
+
+    public void setMovieCoverBitmap(Bitmap movieCoverBitmap) {
+        this.movieCoverBitmap = movieCoverBitmap;
+    }
+
     public  void clearBookCoverImage(){
         this.bookCoverBitmap = null;
     }

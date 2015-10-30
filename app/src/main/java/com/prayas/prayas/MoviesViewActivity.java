@@ -12,8 +12,10 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -116,43 +118,9 @@ public class MoviesViewActivity extends AppCompatActivity  {
                     moviesListView.setOnItemClickListener(new OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            //TODO: TBD
-                            MovieDetail viewHolder = (MovieDetail) view.getTag(R.id.folder_holder);
 
-                            // ArrayList<UssageDetail> ussageList = MyUsedData.getInstance().getUsedDataList();
-                            Gson gson = new Gson();
-                            Boolean purchaseStatus = false;
-                            String jsonCartList = sharedpreferences.getString("order", "");
-                            if (!jsonCartList.equals("")) {
-                         //  ArrayList ussageList = gson.fromJson(jsonCartList, ArrayList.class);
-                              //  List<UssageDetail> ussageList = (List<UssageDetail>) gson.fromJson(jsonCartList, UssageDetail.class);
-                                Type t = new TypeToken<List<UssageDetail>>() {}.getType();
-                                ArrayList<UssageDetail> ussageList =  (ArrayList<UssageDetail>)gson.fromJson(jsonCartList, t);
-                                Log.d("mook ", ussageList.toString());
-
-                            if (ussageList.size() > 0) {
-                                Iterator<UssageDetail> iterator = ussageList.iterator();
-                                while (iterator.hasNext()) {
-                                    UssageDetail ussageInfo = iterator.next();
-                                    if (ussageInfo.ussageId == viewHolder.movieId && ussageInfo.dataType == "MOVIE_PURCHASE") {
-                                        purchaseStatus = true;
-
-                                        Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-                                        File newFile = new File(viewHolder.filePath);
-                                        intent.setDataAndType(Uri.fromFile(newFile), viewHolder.mimeType);
-                                        startActivity(intent);
-                                        //Toast.makeText(activity, "You have already purchased this movie", Toast.LENGTH_SHORT).show();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        if(!purchaseStatus)
-
-                        {
-                            showAlertForPurchase(viewHolder);
-                        }
+                            MovieDetail movieDetail = (MovieDetail) view.getTag(R.id.folder_holder);
+                            showBook(movieDetail);
                     }
                 });
                 }else{
@@ -225,8 +193,12 @@ public class MoviesViewActivity extends AppCompatActivity  {
                     int id = mCursor.getInt(mCursor.getColumnIndex(MediaStore.Video.Media._ID));
 
                    Bitmap media = MediaStore.Video.Thumbnails.getThumbnail(activity.getContentResolver(),
-                           id, MediaStore.Video.Thumbnails.MICRO_KIND, null);
-
+                           id, MediaStore.Video.Thumbnails.MINI_KIND, null);
+                    if (media != null) {
+                        movieInfo.coverBitmap = media;
+                    }else {
+                        Log.d("thmbtmp", "null");
+                    }
                     Cursor thumbCursor = resolver.query( MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
                             thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID
                                     + " = " + id, null, null);
@@ -247,7 +219,7 @@ public class MoviesViewActivity extends AppCompatActivity  {
                     movieInfo.movieArtist = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.ARTIST));
                     movieInfo.mimeType = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE));
                     movieInfo.movieDuration = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
-                  //  movieInfo.mimeType = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE));
+                    movieInfo.movieDescription = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DESCRIPTION));
 
                     movieDetailArrayList.add(movieInfo);
 
@@ -260,50 +232,18 @@ public class MoviesViewActivity extends AppCompatActivity  {
     }
 
 
-    public  void showAlertForPurchase(final MovieDetail movieInfo ){
-        AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
+    public void showBook(MovieDetail movieDetail){
+        Intent intent = new Intent(MoviesViewActivity.this,MovieDetailActivity.class);
+        Bundle information = new Bundle();
+        //information.putParcelable("bitm", bookDetail.bookBitmap);
+        if (movieDetail.coverBitmap != null) {
+            MyUsedData.getInstance().setMovieCoverBitmap(movieDetail.coverBitmap);
+        }
+        information.putSerializable("MovieDetail", movieDetail);
 
-        String message = "Watch " + movieInfo.movieTitle + " for just " + movieInfo.moviePrice + " !!";
-        builder1.setMessage(message);
-        builder1.setCancelable(true);
-        builder1.setPositiveButton("WATCH",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
+        intent.putExtras(information);
+        startActivity(intent);
 
-                            UssageDetail moviePurchaseData = new UssageDetail();
-                            moviePurchaseData.ussageId = movieInfo.movieId;
-                            moviePurchaseData.dataType = "MOVIE_PURCHASE";
-                            moviePurchaseData.dataMessage = "Ussage charge  of " + movieInfo.moviePrice + " will be applicable to watch " + movieInfo.movieTitle + " !!" ;
-                            Date dateobj = new Date();
-                            moviePurchaseData.orderDate = dateobj;
-                            moviePurchaseData.movieDetail = movieInfo;
-                            //Set in my ussage
-                            MyUsedData.getInstance().getUsedDataList().add(moviePurchaseData);
-
-                        SharedPreferences.Editor editor = sharedpreferences.edit();
-
-                        Gson gson = new Gson();
-                        String jsonCartList = gson.toJson(MyUsedData.getInstance().getUsedDataList());
-                        editor.putString("order", jsonCartList);
-                        editor.commit();
-
-                            Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-                            File newFile = new File(movieInfo.filePath);
-                            intent.setDataAndType(Uri.fromFile(newFile), movieInfo.mimeType);
-                            startActivity(intent);
-
-                    }
-                });
-        builder1.setNegativeButton("CANCEL",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-
-        AlertDialog alert11 = builder1.create();
-        alert11.show();
     }
 
     @Override

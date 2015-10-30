@@ -13,7 +13,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -79,8 +81,18 @@ public class MoviesAdapter extends ArrayAdapter<MovieDetail> {
         //viewHolder.previewImageView.setImageBitmap(bmp);
 
         if (item.thumbPath != null) {
-            viewHolder.previewImageView.setImageURI(Uri
-                    .parse(item.thumbPath));
+           viewHolder.previewImageView.setImageURI(Uri
+                  .parse(item.thumbPath));
+           /* Bitmap bitmap = null;
+            try {
+                bitmap = BitmapFactory.decodeStream(mContext.getContentResolver().openInputStream(Uri.parse(item.thumbPath)));
+                viewHolder.previewImageView.setImageBitmap(bitmap);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }*/
+            //imageView.setImageBitmap(bitmap);
+        }else {
+            Toast.makeText(mContext, "Thumb path empty", Toast.LENGTH_SHORT).show();
         }
 
 
