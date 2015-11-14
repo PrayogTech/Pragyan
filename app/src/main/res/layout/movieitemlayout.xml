@@ -44,28 +44,21 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="New Text"
+                    android:text=""
                     android:layout_marginBottom="6dp"
                     android:id="@+id/movieTitle" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="New Text"
+                    android:text=""
                     android:layout_marginBottom="6dp"
                     android:id="@+id/movieProducer" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="New Text"
-                    android:layout_marginBottom="6dp"
-                    android:id="@+id/movieMimeType" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="New Text"
+                    android:text=""
                     android:id="@+id/movieDuration" />
             </LinearLayout>
 

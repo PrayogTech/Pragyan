@@ -12,13 +12,13 @@ public class MoviesViewHolder {
     ImageView previewImageView;
     TextView artistTextview;
     TextView durationTextview;
-    TextView mimeTypeTextview;
+    //TextView mimeTypeTextview;
 
-    public MoviesViewHolder(TextView nametextView, ImageView previewImageView, TextView artistTextview, TextView durationTextview, TextView mimeTextview) {
+    public MoviesViewHolder(TextView nametextView, ImageView previewImageView, TextView artistTextview, TextView durationTextview) {
         this.nametextView = nametextView;
         this.previewImageView = previewImageView;
         this.artistTextview = artistTextview;
         this.durationTextview = durationTextview;
-        this.mimeTypeTextview = mimeTextview;
+        //this.mimeTypeTextview = mimeTextview;
     }
 }

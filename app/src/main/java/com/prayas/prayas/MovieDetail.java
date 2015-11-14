@@ -14,12 +14,13 @@ public class MovieDetail implements Serializable {
     String movieArtist = "";
     String movieId = "";
     String mimeType = "";
-    String thumbPath;
+    String thumbPath = "";
     String movieDuration;
     String movieDescription = "";
     String movieTags;
     String moviePrice = "Rs 5/-";
-    String trailerFilePath;
+    String trailerFilePath = "";
+    String trailerMimeType = "";
   transient   Bitmap coverBitmap;
     String coverFilepath;
     //int previewImage;

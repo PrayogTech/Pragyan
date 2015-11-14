@@ -118,17 +118,20 @@ public class BookDetailActivity extends AppCompatActivity {
                 if (!jsonCartList.equals("")) {
                     Type t = new TypeToken<List<UssageDetail>>() {}.getType();
                     ArrayList<UssageDetail> ussageList =  (ArrayList<UssageDetail>)gson.fromJson(jsonCartList, t);
-                    Log.d("mook ", ussageList.toString());
+                    Log.d("mook ", ussageList.toString()+ "size:"+ussageList.size());
                     if (ussageList.size() > 0) {
                         for (UssageDetail u : ussageList){
                             System.out.print("val stoer"+ u);
                         }
                     Iterator<UssageDetail> iterator = ussageList.iterator();
+                      //  Log.d("mook ", iterator.hasNext()+"has next");
                     while (iterator.hasNext()) {
                         UssageDetail ussageInfo = iterator.next();
-                        if (ussageInfo.ussageId == bookData.bookISBN && ussageInfo.dataType == "BOOK_PURCHASE") {
+                       // Log.d("mook ", ussageInfo.toString()+"ussageid:"+ussageInfo.ussageId + "datatype:"+ussageInfo.dataType);
+                       // Log.d("mook 234", "bookisbn: "+bookData.bookISBN + "   ussage id:"+ ussageInfo.ussageId + "   datatype:"+ussageInfo.dataType);
+                        if (ussageInfo.ussageId.equals(bookData.bookISBN)  && ussageInfo.dataType.equals("BOOK_PURCHASE")) {
                             purchaseStatus = true;
-
+                           // Log.d("mook inside", ussageInfo.toString()+"ussageid:"+ussageInfo.ussageId + "datatype:"+ussageInfo.dataType);
                             // File urlFile = new File(bookData.bookFilePath.getFile());
                             // Uri uri = Uri.fromFile(urlFile);
                             File directory = new File(bookData.bookDiretory);
@@ -138,12 +141,14 @@ public class BookDetailActivity extends AppCompatActivity {
                             intent.setDataAndType(uri, "application/epub+zip");
                             //intent.setDataAndType(uri, "application/pdf");
                             startActivity(intent);
-                            //  Toast.makeText(activity, "You have already purchased this book", Toast.LENGTH_SHORT).show();
+                              Toast.makeText(activity, "You have already purchased this book", Toast.LENGTH_SHORT).show();
                             break;
                         }
                     }
                 }
             }
+
+                Log.d("purchaseStatus", purchaseStatus+ "");
                 if(!purchaseStatus) {
                     showAlertForPurchase();
                 }
@@ -218,11 +223,24 @@ public class BookDetailActivity extends AppCompatActivity {
                         bookPurchaseData.orderDate = dateobj;
                         bookPurchaseData.bookInfo = bookData;
 
+                        Gson gson = new Gson();
+
+                        String jsonCartprev =  sharedpreferences.getString("order", "");
+                        if (!jsonCartprev.equals("")) {
+                            //ArrayList ussageDetailArrayList = gson.fromJson(jsonCartList, ArrayList.class);
+                            Type t = new TypeToken<List<UssageDetail>>() {
+                            }.getType();
+                            ArrayList<UssageDetail> ussageDetailArrayList = (ArrayList<UssageDetail>) gson.fromJson(jsonCartprev, t);
+                            Log.d("mook set lst ", ussageDetailArrayList.toString());
+
+                            MyUsedData.getInstance().setUsedDataList(ussageDetailArrayList);
+                        }
+
                         MyUsedData.getInstance().getUsedDataList().add(bookPurchaseData);
 
                         SharedPreferences.Editor editor = sharedpreferences.edit();
 
-                        Gson gson = new Gson();
+                        //Gson gson = new Gson();
                         String jsonCartList = gson.toJson(MyUsedData.getInstance().getUsedDataList());
                         editor.putString("order", jsonCartList);
                         editor.commit();

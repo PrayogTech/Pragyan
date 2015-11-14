@@ -79,7 +79,7 @@ tools:context="com.prayas.prayas.MovieDetailActivity">
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Description "
+                    android:text=" "
                     android:textColor="#111111"
                     android:textSize="14sp"
                     android:layout_gravity="left"

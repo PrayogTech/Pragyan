@@ -53,10 +53,10 @@ public class MoviesAdapter extends ArrayAdapter<MovieDetail> {
             previewImageView = (ImageView)convertView.findViewById(R.id.preview_image);
             artistTextview = (TextView)convertView.findViewById(R.id.movieProducer);
             durationTextview = (TextView)convertView.findViewById(R.id.movieDuration);
-            mimeTextview = (TextView)convertView.findViewById(R.id.movieMimeType);
+           // mimeTextview = (TextView)convertView.findViewById(R.id.movieMimeType);
            // actionSpinner = (Spinner)convertView.findViewById(R.id.actionSpinnerView);
 
-            viewHolder = new MoviesViewHolder(nametextView, previewImageView, artistTextview, durationTextview, mimeTextview);
+            viewHolder = new MoviesViewHolder(nametextView, previewImageView, artistTextview, durationTextview);
             convertView.setTag(viewHolder);
         }
 
@@ -76,13 +76,14 @@ public class MoviesAdapter extends ArrayAdapter<MovieDetail> {
         );
 
         viewHolder.durationTextview.setText(converted);
-        viewHolder.mimeTypeTextview.setText(item.movieArtist.trim());
+      //  viewHolder.mimeTypeTextview.setText(item.movieArtist.trim());
         //Bitmap bmp = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.comic);
         //viewHolder.previewImageView.setImageBitmap(bmp);
 
         if (item.thumbPath != null) {
-           viewHolder.previewImageView.setImageURI(Uri
-                  .parse(item.thumbPath));
+          viewHolder.previewImageView.setImageURI(Uri
+                 .parse(item.thumbPath));
+
            /* Bitmap bitmap = null;
             try {
                 bitmap = BitmapFactory.decodeStream(mContext.getContentResolver().openInputStream(Uri.parse(item.thumbPath)));

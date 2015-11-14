@@ -29,7 +29,7 @@
         </android.support.design.widget.AppBarLayout>
 
     <!-- The main content view -->
-    <include layout="@layout/activity_my_stores" />
+    <include layout="@layout/content_main" />
 </android.support.design.widget.CoordinatorLayout>
     <!-- The navigation drawer -->
 

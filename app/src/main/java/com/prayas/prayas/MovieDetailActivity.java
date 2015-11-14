@@ -65,7 +65,7 @@ public class MovieDetailActivity extends AppCompatActivity {
         getSupportActionBar().setHomeButtonEnabled(true);
 
         activity = this;
-
+Log.d("detail called", "move");
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         Bundle bundle = activity.getIntent().getExtras();
         if(!bundle.equals("")) {
@@ -76,10 +76,12 @@ public class MovieDetailActivity extends AppCompatActivity {
             if (cover != null){
                // movieDetail.bookBitmap = cover;
                 movieDetail.coverBitmap = cover;
+
             }else {
                 Toast.makeText(activity, "Cover not found", Toast.LENGTH_SHORT).show();
             }
             //renderBookDetail(bookData);
+
             renderMovieDetail(movieDetail);
         }
 
@@ -88,10 +90,16 @@ public class MovieDetailActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
-                File newFile = new File(movieDetail.trailerFilePath);
-                intent.setDataAndType(Uri.fromFile(newFile), movieDetail.mimeType);
-                startActivity(intent);
+                Log.d("trailer click", movieDetail.trailerFilePath);
+                if (!movieDetail.trailerFilePath.equals("")) {
+
+                    Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
+                    File newFile = new File(movieDetail.trailerFilePath);
+                    intent.setDataAndType(Uri.fromFile(newFile), movieDetail.trailerMimeType);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(activity, "Trailer Not available", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -113,9 +121,9 @@ public class MovieDetailActivity extends AppCompatActivity {
                         Iterator<UssageDetail> iterator = ussageList.iterator();
                         while (iterator.hasNext()) {
                             UssageDetail ussageInfo = iterator.next();
-                            if (ussageInfo.ussageId == movieDetail.movieId && ussageInfo.dataType == "MOVIE_PURCHASE") {
+                            if (ussageInfo.ussageId.equals(movieDetail.movieId)  && ussageInfo.dataType.equals("MOVIE_PURCHASE")) {
                                 purchaseStatus = true;
-
+                                Log.d("movie c", movieDetail.filePath);
                                 Intent intent = new Intent(android.content.Intent.ACTION_VIEW);
                                 File newFile = new File(movieDetail.filePath);
                                 intent.setDataAndType(Uri.fromFile(newFile), movieDetail.mimeType);
@@ -160,6 +168,8 @@ public class MovieDetailActivity extends AppCompatActivity {
         if (movieDetail.coverBitmap != null){
             movieImageView.setImageBitmap(movieDetail.coverBitmap);
         }
+
+        Log.d("hjhfj", "");
     }
 
     /**
@@ -197,12 +207,26 @@ public class MovieDetailActivity extends AppCompatActivity {
                         Date dateobj = new Date();
                         moviePurchaseData.orderDate = dateobj;
                         moviePurchaseData.movieDetail = movieInfo;
+
+                        Gson gson = new Gson();
+
+                        String jsonCartprev =  sharedpreferences.getString("order", "");
+                        if (!jsonCartprev.equals("")) {
+                            //ArrayList ussageDetailArrayList = gson.fromJson(jsonCartList, ArrayList.class);
+                            Type t = new TypeToken<List<UssageDetail>>() {
+                            }.getType();
+                            ArrayList<UssageDetail> ussageDetailArrayList = (ArrayList<UssageDetail>) gson.fromJson(jsonCartprev, t);
+                            Log.d("mook set lst ", ussageDetailArrayList.toString());
+
+                            MyUsedData.getInstance().setUsedDataList(ussageDetailArrayList);
+                        }
+
                         //Set in my ussage
                         MyUsedData.getInstance().getUsedDataList().add(moviePurchaseData);
 
                         SharedPreferences.Editor editor = sharedpreferences.edit();
 
-                        Gson gson = new Gson();
+                        //Gson gson = new Gson();
                         String jsonCartList = gson.toJson(MyUsedData.getInstance().getUsedDataList());
                         editor.putString("order", jsonCartList);
                         editor.commit();

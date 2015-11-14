@@ -16,6 +16,7 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -33,6 +34,8 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -98,7 +101,8 @@ public class MoviesViewActivity extends AppCompatActivity  {
         }
         @Override
         protected String doInBackground(String... params) {
-            MakeCursor();
+           getMoviesFromDevice();
+           // MakeCursor();
             return null;
         }
 
@@ -147,6 +151,174 @@ public class MoviesViewActivity extends AppCompatActivity  {
         }
     }
 
+    private MovieDetail getMovieThumbnailImage(String selectionArgString, MovieDetail movieDetail) {
+
+        final String[] projection = {MediaStore.Images.Media._ID, MediaStore.Images.Media.DATA };
+        final String selection = MediaStore.Images.Media.BUCKET_ID + " = ?";
+        Log.d("file path", selectionArgString);
+        final String[] selectionArgs = {selectionArgString};
+        final Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null);
+
+        if (cursor.moveToFirst()) {
+            Log.d("inside", "move first");
+            final int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+           int imageID = cursor.getInt(dataColumn);
+         Uri uri = Uri.withAppendedPath(MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, "" + imageID);
+
+            do {
+                final String data = cursor.getString(dataColumn);
+                movieDetail.thumbPath =  uri.toString(); //data;
+               // result.add(data);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return movieDetail;
+    }
+
+    public static String getBucketId(String path) {
+        return String.valueOf(path.toLowerCase().hashCode());
+    }
+
+    private MovieDetail getMovieMetaData(String selectionArgString, MovieDetail movieInfo) {
+
+        String[] cols = new String[] {
+                MediaStore.Video.Media._ID,
+                MediaStore.Video.Media.TITLE,
+                MediaStore.Video.Media.DATA,
+                MediaStore.Video.Media.MIME_TYPE,
+                MediaStore.Video.Media.ARTIST,
+                MediaStore.Video.Media.DURATION,
+                MediaStore.Video.Media.DESCRIPTION,
+                MediaStore.Video.Media.TAGS
+        };
+        ContentResolver resolver = getContentResolver();
+
+
+        if (resolver == null) {
+            System.out.println("resolver = null");
+        } else {
+            String selection=MediaStore.Video.Media.DATA +" like?";
+            String[] selectionArgs=new String[]{"%" +selectionArgString + "%"};
+            mSortOrder = MediaStore.Video.Media.TITLE + " COLLATE UNICODE";
+            mWhereClause = MediaStore.Video.Media.TITLE + " != ''";
+            mCursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    cols, selection , selectionArgs, mSortOrder);
+
+            if (mCursor == null) {
+                //MusicUtils.displayDatabaseError(this);
+                //TODO: show error
+                return movieInfo;
+            }
+
+            String[] thumbColumns = { MediaStore.Video.Thumbnails.DATA,
+                    MediaStore.Video.Thumbnails.VIDEO_ID };
+
+            //TODO: parse cursors
+            if(mCursor.moveToFirst()){
+                do {
+
+                    //MovieDetail movieInfo = new MovieDetail();
+
+                    String filePathType = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA));
+                    if (filePathType.contains(selectionArgString+"/Trailer")){
+
+                        movieInfo.trailerFilePath = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA));
+                        movieInfo.trailerMimeType = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE));
+                        Log.d("trailer...", movieInfo.trailerFilePath+"mime type"+movieInfo.trailerMimeType);
+
+                    } else {
+
+
+                        int id = mCursor.getInt(mCursor.getColumnIndex(MediaStore.Video.Media._ID));
+
+                        Bitmap media = MediaStore.Video.Thumbnails.getThumbnail(activity.getContentResolver(),
+                                id, MediaStore.Video.Thumbnails.MINI_KIND, null);
+                        if (media != null) {
+                            movieInfo.coverBitmap = media;
+                        }else {
+                            Log.d("thmbtmp", "null");
+                        }
+                        Cursor thumbCursor = resolver.query( MediaStore.Video.Thumbnails.EXTERNAL_CONTENT_URI,
+                                thumbColumns, MediaStore.Video.Thumbnails.VIDEO_ID
+                                        + " = " + id, null, null);
+
+                        Log.d("thumb cursor:", thumbCursor.getCount()+"count");
+
+                        if (thumbCursor.moveToFirst()) {
+                            movieInfo.thumbPath = thumbCursor.getString(thumbCursor
+                                    .getColumnIndex(MediaStore.Video.Thumbnails.DATA));
+                            Log.v("thumbpath", movieInfo.thumbPath);
+                        }else {
+                            Log.d("thumnail", "not found");
+                            //Toast.makeText(activity,  "Thumbnail not found", Toast.LENGTH_SHORT).show();
+                        }
+
+                        movieInfo.filePath = filePathType;
+                        movieInfo.movieTitle = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.TITLE));
+                        movieInfo.movieArtist = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.ARTIST));
+                        movieInfo.mimeType = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE));
+                        movieInfo.movieDuration = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DURATION));
+                        movieInfo.movieDescription = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DESCRIPTION));
+                        Log.d("movie filepath", movieInfo.filePath);
+                        // movieDetailArrayList.add(movieInfo);
+                    }
+                }while (mCursor.moveToNext());
+            }
+
+
+        }
+
+        return  movieInfo;
+
+    }
+
+    private MovieDetail getMovieTrailerData(String selectionArgString, MovieDetail movieInfo) {
+        String[] cols = new String[] {
+                MediaStore.Video.Media._ID,
+                MediaStore.Video.Media.TITLE,
+                MediaStore.Video.Media.DATA,
+                MediaStore.Video.Media.MIME_TYPE
+        };
+        ContentResolver resolver = getContentResolver();
+        if (resolver == null) {
+            System.out.println("resolver = null");
+        } else {
+            String selection=MediaStore.Video.Media.DATA +" like?";
+            String[] selectionArgs=new String[]{"%" + selectionArgString + "%"};
+            mSortOrder = MediaStore.Video.Media.TITLE + " COLLATE UNICODE";
+            mWhereClause = MediaStore.Video.Media.TITLE + " != ''";
+            mCursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                    cols, selection , selectionArgs, mSortOrder);
+
+            if (mCursor == null) {
+                //MusicUtils.displayDatabaseError(this);
+                //TODO: show error
+                return movieInfo;
+            }
+
+            //TODO: parse cursors
+            if(mCursor.moveToFirst()){
+                do {
+
+                    Log.d("trailer", "path");
+                    movieInfo.trailerFilePath = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA));
+                    movieInfo.trailerMimeType = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE));
+Log.d("trailer...", movieInfo.trailerFilePath+"mime type"+movieInfo.trailerMimeType);
+                }while (mCursor.moveToNext());
+            }
+
+
+        }
+
+        return  movieInfo;
+
+
+    }
+
     private void MakeCursor() {
         String[] cols = new String[] {
                 MediaStore.Video.Media._ID,
@@ -163,7 +335,7 @@ public class MoviesViewActivity extends AppCompatActivity  {
             System.out.println("resolver = null");
         } else {
             String selection=MediaStore.Video.Media.DATA +" like?";
-            String[] selectionArgs=new String[]{"%PrayasMovies%"};
+            String[] selectionArgs=new String[]{"%" + "PrayasMovies" + "%"};
             mSortOrder = MediaStore.Video.Media.TITLE + " COLLATE UNICODE";
             mWhereClause = MediaStore.Video.Media.TITLE + " != ''";
             mCursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
@@ -227,6 +399,79 @@ public class MoviesViewActivity extends AppCompatActivity  {
             }
 
 
+        }
+
+    }
+
+    public void getMoviesFromDevice(){
+
+        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasMovies");
+
+        if(!directory.exists()) {
+            directory.mkdirs();
+            //createFolder(m_applicationDir + "/FunnyB/public/"+ publicFolderNames[i], publicFolderNames[i]);
+        }
+        this.walkDir(directory);
+
+    }
+
+    public void walkDir(File dir){
+
+
+        File listFile[] = dir.listFiles();
+
+        if (listFile != null) {
+            for (int i = 0; i < listFile.length; i++) {
+
+                if (listFile[i].isDirectory()) {
+                    walkMovieDir(listFile[i]);
+                }
+            }
+        }
+
+    }
+
+    public void walkMovieDir(File dir){
+
+
+        File listFile[] = dir.listFiles();
+
+        if (listFile != null) {
+            for (int i = 0; i < listFile.length; i++) {
+               MovieDetail movieInfo = new MovieDetail();
+
+                if (listFile[i].isDirectory()) {
+                    //walkTrailerDir(listFile[i]);
+                   // File trailerDir = listFile[i];
+                   // movieInfo = getMovieTrailerData(trailerDir.getAbsolutePath(), movieInfo);
+                }else if (listFile[i].getName().endsWith(".jpg") || listFile[i].getName().endsWith(".png") || listFile[i].getName().endsWith(".gif") || listFile[i].getName().endsWith(".bmp")) {
+//TODO: Add image bitmap to movie detail
+                    Log.d("fetch image", "called");
+                    String bucketID = getBucketId(dir.getAbsolutePath());
+                   // movieInfo = getMovieThumbnailImage(bucketID, movieInfo);
+                    //Log.d("movieinfo", movieInfo.thumbPath);
+                }else {
+                    //TODO : Get movie info cursor
+                    movieInfo = getMovieMetaData(dir.getAbsolutePath(), movieInfo);
+                }
+if (!movieInfo.movieTitle.equals("")) {
+    movieDetailArrayList.add(movieInfo);
+}
+            }
+        }
+
+    }
+
+    public void walkTrailerDir(File dir){
+
+
+        File listFile[] = dir.listFiles();
+
+        if (listFile != null) {
+            for (int i = 0; i < listFile.length; i++) {
+
+               //get trailer file cursor
+            }
         }
 
     }
