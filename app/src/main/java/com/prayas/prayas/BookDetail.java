@@ -21,9 +21,9 @@ public class BookDetail implements Serializable {
     String bookPrice = "Rs. 5/-";
     String bookDescription = "";
     URL bookFilePath;
-    String bookDiretory;
+    String bookDiretory = "";
     URL bookSampeFilePath;
-    String bookSampleDirectory;
+    String bookSampleDirectory = "";
 
 
     public String getAuthorName() {

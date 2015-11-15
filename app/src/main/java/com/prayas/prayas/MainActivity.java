@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.domain.Resource;
 import nl.siegmann.epublib.epub.EpubReader;
 
 
@@ -89,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
     private DrawerAdapter mAdapter;
 
     GetBooksAsyncTask fetchBooksAsynch;
+    private String INTERNAL_PHONE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
+    private  String EXTERNAL_PHONE_PATH = System.getenv("SECONDARY_STORAGE");
    // private static final String SECTION = "SECTION";
    // private static final String ITEM  = "ITEM";
 
@@ -285,17 +288,20 @@ public class MainActivity extends AppCompatActivity {
 
     public void getBooksFromDevice(){
 
-        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook");
+        File directoryPhn = new File(INTERNAL_PHONE_PATH + "/PrayasBook");
 
-        if(!directory.exists()) {
-            directory.mkdirs();
-            //createFolder(m_applicationDir + "/FunnyB/public/"+ publicFolderNames[i], publicFolderNames[i]);
+        if(directoryPhn.exists()) {
+          this.walkdir(directoryPhn, INTERNAL_PHONE_PATH);
+
         }
-        this.walkdir(directory);
+        File directoryCard = new File(EXTERNAL_PHONE_PATH + "/PrayasBook");
 
+        if (directoryCard.exists()){
+            this.walkdir(directoryPhn, EXTERNAL_PHONE_PATH);
+        }
     }
 
-    public void walkdir(File dir) {
+    public void walkdir(File dir, String phonePath) {
         String pdfPattern = ".pdf";
         String epubPattern = ".epub";
 
@@ -305,13 +311,13 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0; i < listFile.length; i++) {
 
                 if (listFile[i].isDirectory()) {
-                    walkdir(listFile[i]);
+                    walkdir(listFile[i], phonePath);
                 } else {
                     if (listFile[i].getName().endsWith(pdfPattern)){
                         //Do what ever u want
-                        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook/" + listFile[i].getName() );
+                        File directory = new File(phonePath + "/PrayasBook/" + listFile[i].getName() );
                         Log.d("file name", listFile[i].getName());
-                        File sampleDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBookSample/" + listFile[i].getName() );
+                        File sampleDirectory = new File(phonePath + "/PrayasBookSample/" + listFile[i].getName() );
 
                         try {
 
@@ -325,9 +331,9 @@ public class MainActivity extends AppCompatActivity {
 
 
                     }else if(listFile[i].getName().endsWith(epubPattern)){
-                        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBook/" + listFile[i].getName() );
+                        File directory = new File(phonePath + "/PrayasBook/" + listFile[i].getName() );
 
-                        File sampleDirectory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasBookSample/" + listFile[i].getName() );
+                        File sampleDirectory = new File(phonePath + "/PrayasBookSample/" + listFile[i].getName() );
 
                         URL url = null;
                         try {
@@ -369,15 +375,18 @@ public class MainActivity extends AppCompatActivity {
             }  //  bookD.bookIcon = R.drawable.comic;
 
             // Log the book's coverimage property
-
-            Bitmap coverImage = BitmapFactory.decodeStream(book.getCoverImage().getInputStream());
+                Resource resource = book.getCoverImage();
+                if (resource != null) {
+                      Bitmap coverImage = BitmapFactory.decodeStream(resource.getInputStream());
+                        bookD.bookBitmap = coverImage;
+                }
            // Drawable drawable = new BitmapDrawable(getResources(), coverImage);
 
             //ByteArrayOutputStream stream = new ByteArrayOutputStream();
             //coverImage.compress(Bitmap.CompressFormat.PNG, 100, stream);
             //byte[] byteArray = stream.toByteArray();
 
-            bookD.bookBitmap = coverImage;
+
             bookD.bookPrice = "5 Rs";
             if (book.getMetadata().getIdentifiers().size() > 0) {
                 bookD.bookISBN = String.valueOf(book.getMetadata().getIdentifiers().get(0));//"ISBN Number";
@@ -586,6 +595,8 @@ public class MainActivity extends AppCompatActivity {
                 if(intent != null) {
                     startActivity(intent);
                 }
+                break;
+            case "Admin Settings" :
                 break;
             default:
                 break;

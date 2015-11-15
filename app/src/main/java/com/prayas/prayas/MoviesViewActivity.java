@@ -307,7 +307,7 @@ public class MoviesViewActivity extends AppCompatActivity  {
                     Log.d("trailer", "path");
                     movieInfo.trailerFilePath = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.DATA));
                     movieInfo.trailerMimeType = mCursor.getString(mCursor.getColumnIndexOrThrow(MediaStore.Video.Media.MIME_TYPE));
-Log.d("trailer...", movieInfo.trailerFilePath+"mime type"+movieInfo.trailerMimeType);
+Log.d("trailer...", movieInfo.trailerFilePath + "mime type" + movieInfo.trailerMimeType);
                 }while (mCursor.moveToNext());
             }
 
@@ -405,15 +405,17 @@ Log.d("trailer...", movieInfo.trailerFilePath+"mime type"+movieInfo.trailerMimeT
 
     public void getMoviesFromDevice(){
 
-        File directory = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasMovies");
+        File directoryPhone = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/PrayasMovies");
 
-        if(!directory.exists()) {
-            directory.mkdirs();
-            //createFolder(m_applicationDir + "/FunnyB/public/"+ publicFolderNames[i], publicFolderNames[i]);
+        if(directoryPhone.exists()) {
+            this.walkDir(directoryPhone);
         }
-        this.walkDir(directory);
 
-    }
+        File directoryCard = new File(System.getenv("SECONDARY_STORAGE") + "/PrayasMovies");
+if (directoryCard.exists()) {
+    this.walkDir(directoryCard);
+}
+}
 
     public void walkDir(File dir){
 
