@@ -496,7 +496,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this,BookDetailActivity.class);
         Bundle information = new Bundle();
 //information.putParcelable("bitm", bookDetail.bookBitmap);
-        MyUsedData.getInstance().setBookCoverBitmap(bookDetail.bookBitmap);
+        if (bookDetail.bookBitmap != null) {
+            MyUsedData.getInstance().setBookCoverBitmap(bookDetail.bookBitmap);
+        }
         information.putSerializable("BookDetail", bookDetail);
 
         intent.putExtras(information);

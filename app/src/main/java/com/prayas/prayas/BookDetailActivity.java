@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -174,6 +175,10 @@ public class BookDetailActivity extends AppCompatActivity {
 
         if (bookDetail.bookBitmap != null){
             bookImageView.setImageBitmap(bookDetail.bookBitmap);
+        } else {
+            Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
+                    R.drawable.no_image);
+            bookImageView.setImageBitmap(icon);
         }
         //TODO: render data
 

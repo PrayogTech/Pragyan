@@ -80,7 +80,7 @@ public class MoviesAdapter extends ArrayAdapter<MovieDetail> {
         //Bitmap bmp = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.comic);
         //viewHolder.previewImageView.setImageBitmap(bmp);
 
-        if (item.thumbPath != null) {
+        if (item.thumbPath != null && !item.thumbPath.equals("")) {
           viewHolder.previewImageView.setImageURI(Uri
                  .parse(item.thumbPath));
 
@@ -93,7 +93,10 @@ public class MoviesAdapter extends ArrayAdapter<MovieDetail> {
             }*/
             //imageView.setImageBitmap(bitmap);
         }else {
-            Toast.makeText(mContext, "Thumb path empty", Toast.LENGTH_SHORT).show();
+            Bitmap icon = BitmapFactory.decodeResource(mContext.getResources(),
+                    R.drawable.no_thumbnail);
+            viewHolder.previewImageView.setImageBitmap(icon);
+           // Toast.makeText(mContext, "Thumb path empty", Toast.LENGTH_SHORT).show();
         }
 
 

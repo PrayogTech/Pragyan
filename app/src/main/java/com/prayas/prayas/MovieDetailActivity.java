@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
@@ -167,6 +168,10 @@ Log.d("detail called", "move");
 
         if (movieDetail.coverBitmap != null){
             movieImageView.setImageBitmap(movieDetail.coverBitmap);
+        } else {
+            Bitmap icon = BitmapFactory.decodeResource(activity.getResources(),
+                    R.drawable.no_thumbnail);
+            movieImageView.setImageBitmap(icon);
         }
 
         Log.d("hjhfj", "");
